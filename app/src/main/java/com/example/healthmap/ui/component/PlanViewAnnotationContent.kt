@@ -1,4 +1,4 @@
-package com.example.healthmap.ui
+package com.example.healthmap.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
