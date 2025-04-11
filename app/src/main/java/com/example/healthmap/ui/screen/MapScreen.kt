@@ -1,4 +1,4 @@
-package com.example.healthmap.ui
+package com.example.healthmap.ui.screen
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.*
@@ -7,8 +7,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.healthmap.model.Plan
 import com.example.healthmap.repository.PlanRepository
+import com.example.healthmap.ui.component.PlanMarkerText
 import com.mapbox.geojson.Point
 import com.mapbox.maps.ViewAnnotationAnchor
 import com.mapbox.maps.extension.compose.MapboxMap
