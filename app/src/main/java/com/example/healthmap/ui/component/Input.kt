@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Icon
@@ -17,6 +18,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,16 +27,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.healthmap.R
+import com.mapbox.maps.extension.style.expressions.dsl.generated.number
+import java.text.DecimalFormatSymbols
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
+import java.util.Locale
 
 enum class InputType {
     TEXT,
     PASSWORD,
+    NUMBER,
     DATE,
     TIME
 }
@@ -60,6 +73,7 @@ fun Input(
             leadingIcon = leadingIcon,
             modifier = modifier
         ) { onValueChange(it) }
+
         InputType.PASSWORD -> TextInput(
             value = value.toString(),
             label = label,
@@ -69,12 +83,22 @@ fun Input(
             leadingIcon = leadingIcon,
             modifier = modifier
         ) { onValueChange(it) }
+
+        InputType.NUMBER -> NumberInput(
+            number = value as Double,
+            label = label,
+            disabled = disabled,
+            leadingIcon = leadingIcon,
+            modifier = modifier
+        ) { onValueChange(it) }
+
         InputType.DATE -> DateInput(
             selectedDate = value as LocalDate,
             label = label,
             disabled = disabled,
             modifier = modifier
         ) { onValueChange(it) }
+
         InputType.TIME -> TimeInput(
             selectedTime = value as LocalTime,
             label = label,
@@ -100,7 +124,7 @@ private fun TextInput(
     var trueValue by remember { mutableStateOf("") }
     var displayValue by remember { mutableStateOf("") }
 
-    Column(modifier = Modifier.fillMaxWidth(1f)) {
+    Column {
         if (label.isNotEmpty()) {
             Text(
                 text = label,
@@ -136,37 +160,37 @@ private fun TextInput(
             trailingIcon = {
                 if (value.isNotEmpty()) { // When the input value is  ot empty
                     // Show password button
-                    Row(modifier = Modifier.padding(24.dp, 0.dp)) {
-                        if (type == InputType.PASSWORD) { // When the input type is password
-                            when (inputType) {
-                                InputType.TEXT -> Icon(
-                                    modifier = Modifier.clickable(
-                                        onClick = {
-                                            inputType = InputType.PASSWORD
-                                            displayValue = "*".repeat(value.length)
-                                        }
-                                    ),
-                                    imageVector = ImageVector.vectorResource(
-                                        id = R.drawable.ic_outline_visibility_off
-                                    ),
-                                    contentDescription = null
-                                )
+                    if (type == InputType.PASSWORD) { // When the input type is password
+                        when (inputType) {
+                            InputType.TEXT -> Icon(
+                                modifier = Modifier.clickable(
+                                    onClick = {
+                                        inputType = InputType.PASSWORD
+                                        displayValue = "*".repeat(value.length)
+                                    }
+                                ),
+                                imageVector = ImageVector.vectorResource(
+                                    id = R.drawable.ic_outline_visibility_off
+                                ),
+                                contentDescription = null
+                            )
 
-                                InputType.PASSWORD -> Icon(
-                                    modifier = Modifier.clickable(
-                                        onClick = {
-                                            inputType = InputType.TEXT
-                                            displayValue = value
-                                        }
-                                    ),
-                                    imageVector = ImageVector.vectorResource(
-                                        id = R.drawable.ic_outline_visibility
-                                    ),
-                                    contentDescription = null
-                                )
-                                InputType.DATE -> {}
-                                InputType.TIME -> {}
-                            }
+                            InputType.PASSWORD -> Icon(
+                                modifier = Modifier.clickable(
+                                    onClick = {
+                                        inputType = InputType.TEXT
+                                        displayValue = value
+                                    }
+                                ),
+                                imageVector = ImageVector.vectorResource(
+                                    id = R.drawable.ic_outline_visibility
+                                ),
+                                contentDescription = null
+                            )
+
+                            InputType.NUMBER -> {}
+                            InputType.DATE -> {}
+                            InputType.TIME -> {}
                         }
                     }
                 }
@@ -175,6 +199,62 @@ private fun TextInput(
                 Text(text = placeholder)
             },
             shape = RoundedCornerShape(8.dp)
+        )
+    }
+}
+
+@Composable
+private fun NumberInput(
+    number: Double = 0.0,
+    label: String = "",
+    disabled: Boolean = false,
+    leadingIcon: ImageVector? = ImageVector.vectorResource(
+        id = R.drawable.ic_outline_pin
+    ),
+    modifier: Modifier,
+    onValueChanged: (Double) -> Unit
+) {
+    val formatter = DecimalFormatter(symbols = DecimalFormatSymbols(Locale.US))
+    var trueValue by remember { mutableDoubleStateOf(0.0) }
+    var displayValue by remember { mutableStateOf("") }
+
+    Column {
+        if (label.isNotEmpty()) {
+            Text(
+                text = label,
+                modifier = Modifier.padding(12.dp, 0.dp, 0.dp, 2.dp)
+            )
+        }
+        OutlinedTextField(
+            modifier = modifier.padding(10.dp, 2.dp),
+            enabled = !disabled,
+            value = displayValue,
+            onValueChange = {
+                displayValue = formatter.cleanup(it)
+                trueValue = when (displayValue.isNotEmpty()) {
+                    true -> if (decimalPointAtLast(displayValue)) {
+                        displayValue.replace(".", "").toDouble()
+                    } else {
+                        displayValue.toDouble()
+                    }
+
+                    false -> 0.0
+                }
+                onValueChanged(trueValue)
+            },
+            leadingIcon = {
+                if (leadingIcon != null)
+                    Icon(
+                        imageVector = leadingIcon, contentDescription = null
+                    )
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Decimal
+            ),
+            placeholder = {
+                Text(text = number.toString())
+            },
+            visualTransformation = DecimalInputVisualTransformation(formatter)
         )
     }
 }
@@ -243,8 +323,10 @@ private fun TimeInput(
     val context = LocalContext.current
     val currentDate = LocalDate.now()
     val calendar = Calendar.getInstance().apply {
-        set(currentDate.year, currentDate.monthValue - 1, currentDate.dayOfMonth,
-            selectedTime.hour, selectedTime.minute, selectedTime.second)
+        set(
+            currentDate.year, currentDate.monthValue - 1, currentDate.dayOfMonth,
+            selectedTime.hour, selectedTime.minute, selectedTime.second
+        )
     }
     var displayValue by remember { mutableStateOf("") }
 
@@ -258,7 +340,9 @@ private fun TimeInput(
             disabled = disabled,
             enableInput = false,
             placeholder = toTime(selectedTime),
-            leadingIcon = Icons.Outlined.DateRange,
+            leadingIcon = ImageVector.vectorResource(
+                id = R.drawable.ic_outline_schedule
+            ),
             modifier = modifier.align(Alignment.Center)
         ) { displayValue = it }
         if (!disabled) {
@@ -274,7 +358,7 @@ private fun TimeInput(
                     ) {
                         TimePickerDialog(
                             context,
-                            { _, hourOfDay, minute  ->
+                            { _, hourOfDay, minute ->
                                 onTimeSelected(LocalTime.of(hourOfDay, minute))
                             },
                             calendar.get(Calendar.HOUR_OF_DAY),
@@ -285,6 +369,100 @@ private fun TimeInput(
             ) { }
         }
     }
+}
+
+private class DecimalFormatter(
+    symbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance()
+) {
+
+    private val thousandsSeparator = symbols.groupingSeparator
+    private val decimalSeparator = symbols.decimalSeparator
+
+    fun cleanup(input: String): String {
+        if (input.matches("\\D".toRegex())) return ""
+        if (input.matches("0+".toRegex())) return "0"
+
+        val sb = StringBuilder()
+
+        var hasDecimalSep = false
+
+        for (char in input) {
+            if (char.isDigit()) {
+                sb.append(char)
+                continue
+            }
+            if (char == decimalSeparator && !hasDecimalSep && sb.isNotEmpty()) {
+                sb.append(char)
+                hasDecimalSep = true
+            }
+        }
+
+        return sb.toString()
+    }
+
+    fun formatForVisual(input: String): String {
+
+        val split = input.split(decimalSeparator)
+
+        val intPart = split[0]
+            .reversed()
+            .chunked(3)
+            .joinToString(separator = thousandsSeparator.toString())
+            .reversed()
+
+        val fractionPart = split.getOrNull(1)
+
+        return if (fractionPart == null) intPart else intPart + decimalSeparator + fractionPart
+    }
+}
+
+private class DecimalInputVisualTransformation(
+    private val decimalFormatter: DecimalFormatter
+) : VisualTransformation {
+
+    override fun filter(text: AnnotatedString): TransformedText {
+
+        val inputText = text.text
+        val formattedNumber = decimalFormatter.formatForVisual(inputText)
+
+        val newText = AnnotatedString(
+            text = formattedNumber,
+            spanStyles = text.spanStyles,
+            paragraphStyles = text.paragraphStyles
+        )
+
+        val offsetMapping = FixedCursorOffsetMapping(
+            contentLength = inputText.length,
+            formattedContentLength = formattedNumber.length
+        )
+
+        return TransformedText(newText, offsetMapping)
+    }
+}
+
+private class FixedCursorOffsetMapping(
+    private val contentLength: Int,
+    private val formattedContentLength: Int,
+) : OffsetMapping {
+    override fun originalToTransformed(offset: Int): Int = formattedContentLength
+    override fun transformedToOriginal(offset: Int): Int = contentLength
+}
+
+private fun decimalPointAtLast(text: String): Boolean {
+    var count = 0
+    for (ch in text) {
+        if (ch == '.') {
+            count++
+        }
+
+        if (count > 1) {
+            break
+        }
+    }
+
+    return text.isNotEmpty() &&
+            text.last() == '.' &&
+            count == 1
 }
 
 private fun toDate(localDate: LocalDate): String {
