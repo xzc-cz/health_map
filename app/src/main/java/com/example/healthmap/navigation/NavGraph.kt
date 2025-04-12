@@ -1,5 +1,7 @@
 package com.example.healthmap.navigation
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -29,10 +31,5 @@ fun AppNavGraph(navController: NavHostController) {
 
 @Composable
 fun LoginScreen() {
-    TODO("Not yet implemented")
-}
-
-@Composable
-fun FormScreen() {
     TODO("Not yet implemented")
 }
