@@ -1,12 +1,12 @@
 package com.example.healthmap.navigation
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.healthmap.ui.screen.*
+import com.example.healthmap.ui.screen.FormScreen
+import com.example.healthmap.ui.screen.HomeScreen
+import com.example.healthmap.ui.screen.MapScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
@@ -18,7 +18,7 @@ fun AppNavGraph(navController: NavHostController) {
             HomeScreen(navController)
         }
         composable("form") {
-            FormScreen()
+            FormScreen(navController)
         }
         composable("map") {
             MapScreen()

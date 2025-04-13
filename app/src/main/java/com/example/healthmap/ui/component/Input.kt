@@ -6,9 +6,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -16,6 +18,7 @@ import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -132,7 +135,9 @@ private fun TextInput(
             )
         }
         OutlinedTextField(
-            modifier = modifier.padding(10.dp, 2.dp),
+            modifier = modifier
+                .padding(10.dp, 2.dp)
+                .fillMaxWidth(),
             enabled = !disabled,
             value = displayValue,
             onValueChange = {
@@ -226,19 +231,26 @@ private fun NumberInput(
             )
         }
         OutlinedTextField(
-            modifier = modifier.padding(10.dp, 2.dp),
+            modifier = modifier
+                .padding(10.dp, 2.dp)
+                .fillMaxWidth(),
             enabled = !disabled,
             value = displayValue,
             onValueChange = {
-                displayValue = formatter.cleanup(it)
-                trueValue = when (displayValue.isNotEmpty()) {
-                    true -> if (decimalPointAtLast(displayValue)) {
-                        displayValue.replace(".", "").toDouble()
-                    } else {
-                        displayValue.toDouble()
-                    }
+                trueValue = if (it.length == 1 && it == "-") {
+                    displayValue = it
+                    0.0
+                } else {
+                    displayValue = formatter.cleanup(it)
+                    when (displayValue.isNotEmpty()) {
+                        true -> if (decimalPointAtLast(displayValue)) {
+                            displayValue.replace(".", "").toDouble()
+                        } else {
+                            displayValue.toDouble()
+                        }
 
-                    false -> 0.0
+                        false -> 0.0
+                    }
                 }
                 onValueChanged(trueValue)
             },
@@ -249,7 +261,7 @@ private fun NumberInput(
                     )
             },
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
+                keyboardType = KeyboardType.Text
             ),
             placeholder = {
                 Text(text = number.toString())
@@ -275,7 +287,7 @@ private fun DateInput(
 
     Box(
         modifier = modifier,
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.CenterStart
     ) {
         TextInput(
             value = displayValue,
@@ -332,7 +344,7 @@ private fun TimeInput(
 
     Box(
         modifier = modifier,
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.CenterStart
     ) {
         TextInput(
             value = displayValue,
@@ -377,14 +389,26 @@ private class DecimalFormatter(
 
     private val thousandsSeparator = symbols.groupingSeparator
     private val decimalSeparator = symbols.decimalSeparator
+    private val minusSign = symbols.minusSign
+
+    fun isNumeric(s: String): Boolean {
+        return try {
+            s.toDouble()
+            true
+        } catch (e: NumberFormatException) {
+            false
+        }
+    }
 
     fun cleanup(input: String): String {
-        if (input.matches("\\D".toRegex())) return ""
+        if (!isNumeric(input))return ""
         if (input.matches("0+".toRegex())) return "0"
+
 
         val sb = StringBuilder()
 
         var hasDecimalSep = false
+        var hasMinusSign = false
 
         for (char in input) {
             if (char.isDigit()) {
@@ -394,6 +418,10 @@ private class DecimalFormatter(
             if (char == decimalSeparator && !hasDecimalSep && sb.isNotEmpty()) {
                 sb.append(char)
                 hasDecimalSep = true
+            }
+            if ((char == minusSign || char == '-') && !hasMinusSign && sb.isEmpty()) {
+                sb.append(char)
+                hasMinusSign = true
             }
         }
 
