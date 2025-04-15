@@ -240,7 +240,6 @@ fun RegisterScreen(navController: NavController) {
             }
 
             Spacer(modifier = Modifier.height(12.dp))
-
             TextButton(onClick = { navController.navigate("login") }) {
                 Text("Already have an account? Login")
             }
