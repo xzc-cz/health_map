@@ -1,6 +1,7 @@
 package com.example.healthmap.ui.screen
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,98 +12,174 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+import com.example.healthmap.R
+import android.app.Activity
+import androidx.compose.foundation.layout.Arrangement
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.style.TextAlign
+import com.mapbox.maps.extension.style.expressions.dsl.generated.color
+import androidx.compose.material3.TextFieldDefaults
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController) {
     val context = LocalContext.current
-
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val window = (LocalContext.current as Activity).window
+    SideEffect {
+        window.navigationBarColor = Color.Black.toArgb()
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = false
+    }
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "HealthMap",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        text = "HEALTH-MAP",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White
                     )
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Black
+                )
             )
-
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
 
-            Text(
-                text = "Login",
-                style = MaterialTheme.typography.headlineLarge,
+
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)) {
+
+
+            Image(
+                painter = painterResource(id = R.drawable.welcome),
+                contentDescription = "Background",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            Box(
                 modifier = Modifier
-                    .padding(bottom = 110.dp)
-                    .align(Alignment.CenterHorizontally),
-                color = MaterialTheme.colorScheme.primary
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f)) // 透明度可调
             )
 
-            // Email Input
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Password Input
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            // Error Message
-            errorMessage?.let {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = it, color = MaterialTheme.colorScheme.error)
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Login Button
-            Button(
-                onClick = {
-                    if (email.isBlank() || password.isBlank()) {
-                        errorMessage = "Please enter both email and password"
-                    } else {
-                        errorMessage = null
-                        Toast.makeText(context, "Logged in as $email", Toast.LENGTH_SHORT).show()
-                        // 模拟登录成功跳转地图页
-                        navController.navigate("map")
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
+            // 📄 页面内容
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Login")
-            }
+                Text(
+                    text = "WELCOME!",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = Color.White,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 40.dp)
+                )
+                Text(
+                    text = "T0",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 40.dp)
+                )
+                Text(
+                    text = "HEALTH-MAP",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 240.dp)
+                )
 
-            Spacer(modifier = Modifier.height(12.dp))
+                // Email
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email", color = Color.White) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedTextColor =  Color.White,
+                        unfocusedTextColor = Color.White,
+                        cursorColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.White
+                    )
+                )
 
-            // Register Navigation
-            TextButton(onClick = { navController.navigate("register") }) {
-                Text("Don't have an account? Register")
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Password
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password", color = Color.White) },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedTextColor =  Color.White,
+                        unfocusedTextColor = Color.White,
+                        cursorColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.White
+                    )
+                )
+
+                // Error message
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Login button
+                Button(
+                    onClick = {
+                        if (email.isBlank() || password.isBlank()) {
+                            errorMessage = "Please enter both email and password"
+                        } else {
+                            errorMessage = null
+                            Toast.makeText(context, "Logged in as $email", Toast.LENGTH_SHORT).show()
+                            navController.navigate("home")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    shape = RectangleShape
+                ) {
+                    Text("Login")
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Register
+                TextButton(onClick = { navController.navigate("register") }) {
+                    Text("Don't have an account? Register", color = Color.White)
+                }
             }
         }
     }
@@ -121,16 +198,27 @@ fun RegisterScreen(navController: NavController) {
     val genderOptions = listOf("Male", "Female", "Other")
     var expanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val window = (LocalContext.current as Activity).window
+    SideEffect {
+        window.navigationBarColor = Color.Black.toArgb()
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = false
+    }
+
+
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "HealthMap",
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        text = "Register",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White
                     )
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Black
+                )
             )
 
         }
@@ -234,14 +322,19 @@ fun RegisterScreen(navController: NavController) {
                         navController.navigate("login")
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                ),
+                shape = RectangleShape
             ) {
                 Text("Register")
             }
 
             Spacer(modifier = Modifier.height(12.dp))
             TextButton(onClick = { navController.navigate("login") }) {
-                Text("Already have an account? Login")
+                Text("Already have an account? Login", color = Color.Black)
             }
         }
     }
