@@ -40,6 +40,7 @@ abstract class PlanDatabase : RoomDatabase() {
                     PlanDatabase::class.java,
                     "plan_database"
                 )
+                    .fallbackToDestructiveMigration(false)
                     .build()
                 INSTANCE = instance
                 instance
@@ -52,8 +53,16 @@ class PlanRepository(application: Application) {
     private var planDao: PlanDAO =
         PlanDatabase.getDatabase(application).planDAO()
     val allPlans: Flow<List<Plan>> = planDao.getAllPlans()
+    fun getPlansForDate(date: LocalDate): Flow<List<Plan>> = planDao.getPlansForDate(date)
+
+    fun getCount() = planDao.getCount()
+
     suspend fun insert(plan: Plan) {
         planDao.insertPlan(plan)
+    }
+
+    suspend fun insertManyPlans(plans: List<Plan>) {
+        planDao.insertManyPlans(plans)
     }
 
     suspend fun delete(plan: Plan) {
@@ -64,5 +73,5 @@ class PlanRepository(application: Application) {
         planDao.updatePlan(plan)
     }
 
-    fun getPlansForDate(date: LocalDate): Flow<List<Plan>> = planDao.getPlansForDate(date)
+    suspend fun clearAll() = planDao.clearAll()
 }

@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,6 +57,7 @@ import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
 import com.mapbox.maps.viewannotation.annotationAnchor
 import com.mapbox.maps.viewannotation.geometry
 import com.mapbox.maps.viewannotation.viewAnnotationOptions
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -64,6 +66,8 @@ import java.time.LocalTime
 fun FormScreen(navController: NavController,
                userName: String,
                planViewModel: PlanViewModel = viewModel()) {
+    val planCount by planViewModel.getCount().collectAsState(initial = 0)
+
     var showMap by remember { mutableStateOf(true) }
     val context = LocalContext.current
     val view = LocalView.current
@@ -240,6 +244,7 @@ fun FormScreen(navController: NavController,
                     .background(Color.Black)
                     .clickable {
                         submitPlan(
+                            planCount,
                             userName,
                             activityName,
                             timeToString(selectedTime),
@@ -278,6 +283,7 @@ private fun timeToString(time: LocalTime): String {
 }
 
 private fun submitPlan(
+    id: Int,
     username: String,
     activity: String,
     time: String,
@@ -287,6 +293,7 @@ private fun submitPlan(
     planViewModel: PlanViewModel
 ) {
     val plan = Plan(
+        id = id,
         name = username,
         activity = activity,
         time = time,
@@ -297,4 +304,5 @@ private fun submitPlan(
 
     // insert one plan into db
     planViewModel.insertPlan(plan)
+
 }
