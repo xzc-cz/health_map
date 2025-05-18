@@ -2,8 +2,10 @@ package com.example.healthmap.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.healthmap.ui.screen.FormScreen
 import com.example.healthmap.ui.screen.HomeScreen
 import com.example.healthmap.ui.screen.LoginScreen
@@ -20,8 +22,17 @@ fun AppNavGraph(navController: NavHostController) {
         composable("home") {
             HomeScreen(userName = "Student 1",navController)
         }
-        composable("form") {
-            FormScreen(navController)
+        composable(
+            route = "form/{userName}",
+            arguments = listOf(
+                navArgument("userName") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            )
+        ) { backStackEntry ->
+            val userName = backStackEntry.arguments?.getString("userName") ?: ""
+            FormScreen(navController = navController, userName = userName)
         }
         composable("map") {
             MapScreen(navController)

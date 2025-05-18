@@ -98,7 +98,7 @@ fun HomeScreenBody(userName: String, modifier: Modifier, navController: NavContr
                         .height(50.dp)
                         .background(Color.Black)
                         .clickable{
-                            navController.navigate("form")
+                            navController.navigate("form/${userName}")
                         },
                     contentAlignment = Alignment.Center
                 ) {
