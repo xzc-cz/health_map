@@ -17,7 +17,7 @@ import com.example.healthmap.ui.screen.RegisterScreen
 fun AppNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = "login"
     ) {
         composable("home") {
             HomeScreen(userName = "Student 1",navController)
