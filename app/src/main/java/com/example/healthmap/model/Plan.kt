@@ -1,4 +1,5 @@
 package com.example.healthmap.model
+import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.Insert
@@ -11,7 +12,7 @@ import java.time.LocalDate
 @Entity
 data class Plan(
     @PrimaryKey(autoGenerate = true)
-    val uid: Int = 0,
+    val id: Int = 0,
     val name: String,
     val activity: String,
     val time: String,
@@ -20,10 +21,13 @@ data class Plan(
     val lat: Double
 )
 
-
+@Dao
 interface PlanDAO {
     @Query("SELECT * FROM `Plan`")
     fun getAllPlans(): Flow<List<Plan>>
+
+    @Query("SELECT * FROM `Plan` WHERE date = :date")
+    fun getPlansForDate(date: LocalDate): Flow<List<Plan>>
 
     @Insert
     fun insertPlan(plan: Plan)

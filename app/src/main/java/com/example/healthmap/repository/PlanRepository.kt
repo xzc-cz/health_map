@@ -1,45 +1,68 @@
 package com.example.healthmap.repository
 
+import android.app.Application
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
 import com.example.healthmap.model.Plan
+import com.example.healthmap.model.PlanDAO
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 
-object PlanRepository {
-    private val allPlans = listOf(
-        Plan("Alex", "Running", "06:30", LocalDate.of(2024, 6, 10), 145.130, -37.917),
-        Plan("Mia", "Walking", "07:15", LocalDate.of(2024, 6, 10), 145.131, -37.916),
-        Plan("Leo", "Gym", "08:00", LocalDate.of(2024, 6, 10), 145.132, -37.915),
-        Plan("Tom", "Swimming", "09:00", LocalDate.of(2024, 6, 10), 145.133, -37.914),
-        Plan("Lily", "Yoga", "10:00", LocalDate.of(2024, 6, 10), 145.134, -37.913),
-        Plan("John", "Cycling", "11:00", LocalDate.of(2024, 6, 10), 145.135, -37.912),
-        Plan("Amy", "Meditation", "12:00", LocalDate.of(2024, 6, 10), 145.136, -37.911),
-        Plan("Jack", "Jogging", "13:00", LocalDate.of(2024, 6, 10), 145.137, -37.910),
-        Plan("Nina", "Dancing", "14:00", LocalDate.of(2024, 6, 10), 145.138, -37.909),
-        Plan("Ben", "Boxing", "15:00", LocalDate.of(2024, 6, 10), 145.139, -37.908),
-        Plan("Emily", "Pilates", "16:00", LocalDate.of(2024, 6, 10), 145.140, -37.907),
-        Plan("Chris", "Stretching", "17:00", LocalDate.of(2024, 6, 10), 145.141, -37.906),
-        Plan("Grace", "Cardio", "18:00", LocalDate.of(2024, 6, 10), 145.142, -37.905),
-        Plan("Ethan", "Rowing", "19:00", LocalDate.of(2024, 6, 10), 145.143, -37.904),
-        Plan("Sophie", "CrossFit", "20:00", LocalDate.of(2024, 6, 10), 145.144, -37.903),
+object Converters {
+    @TypeConverter
+    @JvmStatic
+    fun fromLocalDate(date: LocalDate?): String? =
+        date?.toString()
 
-        Plan("Alex", "Running", "06:30", LocalDate.of(2024, 6, 11), 145.130, -37.917),
-        Plan("Mia", "Walking", "07:15", LocalDate.of(2024, 6, 11), 145.131, -37.916),
-        Plan("Leo", "Gym", "08:00", LocalDate.of(2024, 6, 11), 145.132, -37.915),
-        Plan("Tom", "Swimming", "09:00", LocalDate.of(2024, 6, 11), 145.133, -37.914),
-        Plan("Lily", "Yoga", "10:00", LocalDate.of(2024, 6, 11), 145.134, -37.913),
-        Plan("John", "Cycling", "11:00", LocalDate.of(2024, 6, 11), 145.135, -37.912),
-        Plan("Amy", "Meditation", "12:00", LocalDate.of(2024, 6, 11), 145.136, -37.911),
-        Plan("Jack", "Jogging", "13:00", LocalDate.of(2024, 6, 11), 145.137, -37.910),
-        Plan("Nina", "Dancing", "14:00", LocalDate.of(2024, 6, 11), 145.138, -37.909),
-        Plan("Ben", "Boxing", "15:00", LocalDate.of(2024, 6, 11), 145.139, -37.908),
-        Plan("Emily", "Pilates", "16:00", LocalDate.of(2024, 6, 11), 145.140, -37.907),
-        Plan("Chris", "Stretching", "17:00", LocalDate.of(2024, 6, 11), 145.141, -37.906),
-        Plan("Grace", "Cardio", "18:00", LocalDate.of(2024, 6, 11), 145.142, -37.905),
-        Plan("Ethan", "Rowing", "19:00", LocalDate.of(2024, 6, 11), 145.143, -37.904),
-        Plan("Sophie", "CrossFit", "20:00", LocalDate.of(2024, 6, 11), 145.144, -37.903)
-    )
+    @TypeConverter
+    @JvmStatic
+    fun toLocalDate(value: String?): LocalDate? =
+        value?.let { LocalDate.parse(it) }
+}
 
-    fun getPlansForDate(date: LocalDate): List<Plan> {
-        return allPlans.filter { it.date == date }
+@Database(entities = [Plan::class], version = 1, exportSchema = false)
+@TypeConverters(Converters::class)
+abstract class PlanDatabase : RoomDatabase() {
+    abstract fun planDAO(): PlanDAO
+
+    companion object {
+        @Volatile
+        private var INSTANCE: PlanDatabase? = null
+        fun getDatabase(context: Context): PlanDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    PlanDatabase::class.java,
+                    "plan_database"
+                )
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
     }
+}
+
+class PlanRepository(application: Application) {
+    private var planDao: PlanDAO =
+        PlanDatabase.getDatabase(application).planDAO()
+    val allPlans: Flow<List<Plan>> = planDao.getAllPlans()
+    suspend fun insert(plan: Plan) {
+        planDao.insertPlan(plan)
+    }
+
+    suspend fun delete(plan: Plan) {
+        planDao.deletePlan(plan)
+    }
+
+    suspend fun update(plan: Plan) {
+        planDao.updatePlan(plan)
+    }
+
+    fun getPlansForDate(date: LocalDate): Flow<List<Plan>> = planDao.getPlansForDate(date)
 }
