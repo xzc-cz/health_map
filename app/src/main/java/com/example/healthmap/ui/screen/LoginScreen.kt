@@ -1,5 +1,6 @@
 package com.example.healthmap.ui.screen
 
+import com.example.healthmap.ui.component.AppTopBar
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -8,7 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -22,10 +22,7 @@ import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.style.TextAlign
-import com.mapbox.maps.extension.style.expressions.dsl.generated.color
 import androidx.compose.material3.TextFieldDefaults
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,27 +39,16 @@ fun LoginScreen(navController: NavController) {
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "HEALTH-MAP",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Black
-                )
+            AppTopBar(
+                title = "HEALTH-MAP",
+                isHomeScreen = false,
+                showNavigationIcon = false
             )
         }
     ) { padding ->
-
-
         Box(modifier = Modifier
             .fillMaxSize()
             .padding(padding)) {
-
-
             Image(
                 painter = painterResource(id = R.drawable.welcome),
                 contentDescription = "Background",
@@ -73,10 +59,9 @@ fun LoginScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)) // 透明度可调
+                    .background(Color.Black.copy(alpha = 0.5f))
             )
 
-            // 📄 页面内容
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -109,7 +94,6 @@ fun LoginScreen(navController: NavController) {
                         .padding(bottom = 240.dp)
                 )
 
-                // Email
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -124,11 +108,8 @@ fun LoginScreen(navController: NavController) {
                         unfocusedBorderColor = Color.White
                     )
                 )
-
-
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Password
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -145,7 +126,6 @@ fun LoginScreen(navController: NavController) {
                     )
                 )
 
-                // Error message
                 errorMessage?.let {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = it, color = MaterialTheme.colorScheme.error)
@@ -153,7 +133,6 @@ fun LoginScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Login button
                 Button(
                     onClick = {
                         if (email.isBlank() || password.isBlank()) {
@@ -161,7 +140,10 @@ fun LoginScreen(navController: NavController) {
                         } else {
                             errorMessage = null
                             Toast.makeText(context, "Logged in as $email", Toast.LENGTH_SHORT).show()
-                            navController.navigate("home")
+
+                            navController.navigate("home") {
+                                popUpTo("login") { inclusive = true }
+                            }
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -176,7 +158,6 @@ fun LoginScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Register
                 TextButton(onClick = { navController.navigate("register") }) {
                     Text("Don't have an account? Register", color = Color.White)
                 }
@@ -204,23 +185,13 @@ fun RegisterScreen(navController: NavController) {
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = false
     }
 
-
-
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Register",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Black
-                )
+            AppTopBar(
+                title = "Register",
+                isHomeScreen = false,
+                onNavigationClick = { navController.popBackStack() }
             )
-
         }
     ) { padding ->
         Column(
@@ -339,5 +310,3 @@ fun RegisterScreen(navController: NavController) {
         }
     }
 }
-
-

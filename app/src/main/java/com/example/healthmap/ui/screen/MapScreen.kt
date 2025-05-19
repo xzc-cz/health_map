@@ -1,24 +1,16 @@
 package com.example.healthmap.ui.screen
 
-
 import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,38 +36,22 @@ import com.mapbox.maps.viewannotation.geometry
 import com.mapbox.maps.viewannotation.viewAnnotationOptions
 import java.time.LocalDate
 import java.util.Calendar
-
+import com.example.healthmap.ui.component.AppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(navController: NavController, planViewModel: PlanViewModel = viewModel()) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-   val plans by planViewModel.getPlansForDate(selectedDate).collectAsState(initial = emptyList())
+    val plans by planViewModel.getPlansForDate(selectedDate).collectAsState(initial = emptyList())
     val context = LocalContext.current
     println("📍 Loaded ${plans.size} plans for $selectedDate")
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "View On Map",
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Black
-                )
+            AppTopBar(
+                title = "View On Map",
+                isHomeScreen = false,
+                onNavigationClick = { navController.popBackStack() }
             )
         },
         bottomBar = {

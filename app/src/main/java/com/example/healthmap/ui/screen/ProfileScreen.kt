@@ -1,13 +1,8 @@
 package com.example.healthmap.ui.screen
 
-
-
-import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.healthmap.MainActivity
+import com.example.healthmap.ui.component.AppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,33 +21,13 @@ fun ProfileScreen( navController: NavController) {
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Profile",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        navController.navigate("home") {
-                            popUpTo("profile") { inclusive = true }
-                        }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Black
-                )
+            AppTopBar(
+                title = "Profile",
+                isHomeScreen = false,
+                onNavigationClick = {navController.popBackStack()}
             )
         }
-    ) { innerPadding ->
+    ){ innerPadding ->
         Column(modifier = Modifier.padding(16.dp).padding(innerPadding)) {
             ProfileCard(
                 title = "Personal Information",

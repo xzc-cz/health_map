@@ -13,17 +13,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.ThumbUp
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
@@ -57,7 +52,7 @@ import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
 import com.mapbox.maps.viewannotation.annotationAnchor
 import com.mapbox.maps.viewannotation.geometry
 import com.mapbox.maps.viewannotation.viewAnnotationOptions
-import kotlinx.coroutines.flow.Flow
+import com.example.healthmap.ui.component.AppTopBar
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -92,30 +87,13 @@ fun FormScreen(navController: NavController,
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Make a New Plan",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
-                    ) },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            showMap = false
-                            navController.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Black
-                )
+            AppTopBar(
+                title = "Make a New Plan",
+                isHomeScreen = false,
+                onNavigationClick = {
+                    showMap = false
+                    navController.popBackStack()
+                }
             )
         }
     ) { innerPadding ->
@@ -301,8 +279,5 @@ private fun submitPlan(
         lng = longitude,
         lat = latitude
     )
-
-    // insert one plan into db
     planViewModel.insertPlan(plan)
-
 }
