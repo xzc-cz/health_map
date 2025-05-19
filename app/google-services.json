@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "26325392050",
+    "project_id": "fit5046-8e39b",
+    "storage_bucket": "fit5046-8e39b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26325392050:android:2a7606a920d3e5cfa4c7ab",
+        "android_client_info": {
+          "package_name": "com.example.healthmap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpynE4bQroybQeyoh_x0DmieJXntfXEmo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

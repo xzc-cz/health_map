@@ -1,69 +1,140 @@
 package com.example.healthmap.ui.screen
 
+
 import android.app.DatePickerDialog
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.healthmap.repository.PlanRepository
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.healthmap.ui.component.PlanMarkerText
+import com.example.healthmap.viewmodel.PlanViewModel
 import com.mapbox.geojson.Point
 import com.mapbox.maps.ViewAnnotationAnchor
 import com.mapbox.maps.extension.compose.MapboxMap
-import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
+import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
 import com.mapbox.maps.viewannotation.annotationAnchor
 import com.mapbox.maps.viewannotation.geometry
 import com.mapbox.maps.viewannotation.viewAnnotationOptions
 import java.time.LocalDate
-import java.util.*
+import java.util.Calendar
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapScreen() {
+fun MapScreen(navController: NavController, planViewModel: PlanViewModel = viewModel()) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    val plans = remember(selectedDate) { PlanRepository.getPlansForDate(selectedDate) }
-    val list = PlanRepository.getPlansForDate(selectedDate)
-    println("📍 Loaded ${list.size} plans for $selectedDate")
-    //调试
+   val plans by planViewModel.getPlansForDate(selectedDate).collectAsState(initial = emptyList())
+    val context = LocalContext.current
+    println("📍 Loaded ${plans.size} plans for $selectedDate")
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        // 日期选择器按钮
-        DatePickerHeader(selectedDate) { pickedDate ->
-            selectedDate = pickedDate
-        }
-
-        // 地图区域
-        Box(modifier = Modifier.weight(1f)) {
-            MapboxMap(
-                modifier = Modifier.fillMaxSize(),
-                mapViewportState = rememberMapViewportState {
-                    setCameraOptions {
-                        zoom(14.0)
-                        center(Point.fromLngLat(145.130, -37.917))
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "View On Map",
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Black
+                )
+            )
+        },
+        bottomBar = {
+            Button(
+                onClick = {
+                    DatePickerDialog(
+                        context,
+                        { _, year, month, dayOfMonth ->
+                            selectedDate = LocalDate.of(year, month + 1, dayOfMonth)
+                        },
+                        selectedDate.year,
+                        selectedDate.monthValue - 1,
+                        selectedDate.dayOfMonth
+                    ).show()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                )
             ) {
-                plans.forEach { plan ->
-                    //调试
-                    println("🗺 Showing plan: ${plan.name} at (${plan.lng}, ${plan.lat})")
-                    ViewAnnotation(
-                        options = viewAnnotationOptions {
-                            geometry(Point.fromLngLat(plan.lng, plan.lat))
-                            annotationAnchor {
-                                anchor(ViewAnnotationAnchor.BOTTOM)
-                            }
+                Text("Choose the date：$selectedDate")
+            }
+        }
+    ) { innerPadding ->
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)) {
+
+            Box(modifier = Modifier.weight(1f)) {
+                MapboxMap(
+                    modifier = Modifier.fillMaxSize(),
+                    mapViewportState = rememberMapViewportState {
+                        setCameraOptions {
+                            zoom(14.0)
+                            center(Point.fromLngLat(145.130, -37.917))
                         }
-                    ) {
-                        PlanMarkerText(plan.name, plan.activity, plan.time)
+                    }
+                ) {
+                    plans.forEach { plan ->
+                        ViewAnnotation(
+                            options = viewAnnotationOptions {
+                                geometry(Point.fromLngLat(plan.lng, plan.lat))
+                                annotationAnchor {
+                                    anchor(ViewAnnotationAnchor.BOTTOM)
+                                }
+                            }
+                        ) {
+                            PlanMarkerText(plan.name, plan.activity, plan.time)
+                        }
                     }
                 }
             }
         }
     }
 }
-
 @Composable
 fun DatePickerHeader(
     selectedDate: LocalDate,
@@ -88,8 +159,13 @@ fun DatePickerHeader(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(16.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.Black,
+            contentColor = Color.White
+        ),
+        shape = RectangleShape
     ) {
-        Text("选择日期：$selectedDate")
+        Text("Choose the Date：$selectedDate")
     }
 }
