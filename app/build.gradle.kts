@@ -72,5 +72,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.32.0")
+    implementation ("com.google.firebase:firebase-auth-ktx:22.3.0")
     implementation("androidx.compose.foundation:foundation:1.6.1")
 }

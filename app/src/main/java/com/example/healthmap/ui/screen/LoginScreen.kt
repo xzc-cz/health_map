@@ -1,6 +1,5 @@
 package com.example.healthmap.ui.screen
 
-import com.example.healthmap.ui.component.AppTopBar
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -22,33 +22,70 @@ import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.style.TextAlign
+import com.mapbox.maps.extension.style.expressions.dsl.generated.color
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.example.healthmap.viewmodel.UserViewModel
+import com.google.firebase.auth.FirebaseAuth
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val window = (LocalContext.current as Activity).window
-    SideEffect {
-        window.navigationBarColor = Color.Black.toArgb()
-        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = false
+    val isInPreview = LocalInspectionMode.current
+
+    if (!isInPreview && context is Activity) {
+        val window = context.window
+        SideEffect {
+            window.navigationBarColor = Color.Black.toArgb()
+            WindowInsetsControllerCompat(window, window.decorView)
+                .isAppearanceLightNavigationBars = false
+        }
+    }
+
+    LaunchedEffect(userViewModel.loginSuccess) {
+        userViewModel.loginSuccess.collect { success ->
+            if (success) {
+                navController.navigate("home")
+            } else {
+                errorMessage = "Incorrect email or password"
+            }
+        }
     }
 
     Scaffold(
         topBar = {
-            AppTopBar(
-                title = "HEALTH-MAP",
-                isHomeScreen = false,
-                showNavigationIcon = false
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "HEALTH-MAP",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Black
+                )
             )
         }
     ) { padding ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)) {
+
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+
+
             Image(
                 painter = painterResource(id = R.drawable.welcome),
                 contentDescription = "Background",
@@ -59,9 +96,10 @@ fun LoginScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
+                    .background(Color.Black.copy(alpha = 0.5f)) // 透明度可调
             )
 
+            // page detail
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -91,9 +129,10 @@ fun LoginScreen(navController: NavController) {
                     color = Color.White,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 240.dp)
+                        .padding(bottom = 120.dp)
                 )
 
+                // Email
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -101,15 +140,18 @@ fun LoginScreen(navController: NavController) {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedTextColor =  Color.White,
+                        focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         cursorColor = Color.White,
                         focusedBorderColor = Color.White,
                         unfocusedBorderColor = Color.White
                     )
                 )
+
+
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Password
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -118,7 +160,7 @@ fun LoginScreen(navController: NavController) {
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedTextColor =  Color.White,
+                        focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         cursorColor = Color.White,
                         focusedBorderColor = Color.White,
@@ -126,6 +168,7 @@ fun LoginScreen(navController: NavController) {
                     )
                 )
 
+                // Error message
                 errorMessage?.let {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = it, color = MaterialTheme.colorScheme.error)
@@ -133,17 +176,14 @@ fun LoginScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Login button
                 Button(
                     onClick = {
                         if (email.isBlank() || password.isBlank()) {
                             errorMessage = "Please enter both email and password"
                         } else {
                             errorMessage = null
-                            Toast.makeText(context, "Logged in as $email", Toast.LENGTH_SHORT).show()
-
-                            navController.navigate("home") {
-                                popUpTo("login") { inclusive = true }
-                            }
+                            userViewModel.login(email, password)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -158,9 +198,18 @@ fun LoginScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Forgot Password
+                TextButton(onClick = {
+                    navController.navigate("reset")
+                }) {
+                    Text("Forgot Password?", color = Color.White)
+                }
+
+                // Register
                 TextButton(onClick = { navController.navigate("register") }) {
                     Text("Don't have an account? Register", color = Color.White)
                 }
+
             }
         }
     }
@@ -169,7 +218,7 @@ fun LoginScreen(navController: NavController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -179,19 +228,44 @@ fun RegisterScreen(navController: NavController) {
     val genderOptions = listOf("Male", "Female", "Other")
     var expanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val window = (LocalContext.current as Activity).window
-    SideEffect {
-        window.navigationBarColor = Color.Black.toArgb()
-        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightNavigationBars = false
+    val isInPreview = LocalInspectionMode.current
+
+    if (!isInPreview && context is Activity) {
+        val window = context.window
+        SideEffect {
+            window.navigationBarColor = Color.Black.toArgb()
+            WindowInsetsControllerCompat(window, window.decorView)
+                .isAppearanceLightNavigationBars = false
+        }
+    }
+
+    LaunchedEffect(userViewModel.registerResult) {
+        userViewModel.registerResult.collect { newId ->
+            if (newId != null) {
+                navController.navigate("login") {
+                    popUpTo("register") { inclusive = true }
+                }
+            } else {
+                errorMessage = "Failed to register new account"
+            }
+        }
     }
 
     Scaffold(
         topBar = {
-            AppTopBar(
-                title = "Register",
-                isHomeScreen = false,
-                onNavigationClick = { navController.popBackStack() }
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Register",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White
+                    )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Black
+                )
             )
+
         }
     ) { padding ->
         Column(
@@ -289,8 +363,13 @@ fun RegisterScreen(navController: NavController) {
                         errorMessage = "All fields are required"
                     } else {
                         errorMessage = null
-                        Toast.makeText(context, "Registered: $firstName $lastName", Toast.LENGTH_SHORT).show()
-                        navController.navigate("login")
+                        userViewModel.register(
+                            email,
+                            password,
+                            firstName,
+                            lastName,
+                            gender
+                        )
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
