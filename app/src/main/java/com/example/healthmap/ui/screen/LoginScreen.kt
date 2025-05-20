@@ -99,7 +99,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     .background(Color.Black.copy(alpha = 0.5f)) // 透明度可调
             )
 
-            // 📄 页面内容
+            // page detail
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -388,11 +388,4 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
             }
         }
     }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PreviewLoginScreen() {
-    val navController = rememberNavController()  // 创建预览用的导航控制器
-    LoginScreen(navController = navController)   // 调用你定义的 LoginScreen
 }
