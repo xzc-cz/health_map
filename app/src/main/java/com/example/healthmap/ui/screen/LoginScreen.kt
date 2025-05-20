@@ -27,13 +27,15 @@ import com.mapbox.maps.extension.style.expressions.dsl.generated.color
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
+import com.example.healthmap.viewmodel.UserViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -49,6 +51,15 @@ fun LoginScreen(navController: NavController) {
         }
     }
 
+    LaunchedEffect(userViewModel.loginSuccess) {
+        userViewModel.loginSuccess.collect { success ->
+            if (success) {
+                navController.navigate("home")
+            } else {
+                errorMessage = "Incorrect email or password"
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -68,9 +79,11 @@ fun LoginScreen(navController: NavController) {
     ) { padding ->
 
 
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
 
 
             Image(
@@ -127,7 +140,7 @@ fun LoginScreen(navController: NavController) {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedTextColor =  Color.White,
+                        focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         cursorColor = Color.White,
                         focusedBorderColor = Color.White,
@@ -147,7 +160,7 @@ fun LoginScreen(navController: NavController) {
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
                     colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedTextColor =  Color.White,
+                        focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         cursorColor = Color.White,
                         focusedBorderColor = Color.White,
@@ -169,17 +182,8 @@ fun LoginScreen(navController: NavController) {
                         if (email.isBlank() || password.isBlank()) {
                             errorMessage = "Please enter both email and password"
                         } else {
-                            FirebaseAuth.getInstance()
-                                .signInWithEmailAndPassword(email, password)
-                                .addOnCompleteListener { task ->
-                                    if (task.isSuccessful) {
-                                        navController.navigate("home") {
-                                            popUpTo("login") { inclusive = true }
-                                        }
-                                    } else {
-                                        errorMessage = task.exception?.message ?: "Login failed"
-                                    }
-                                }
+                            errorMessage = null
+                            userViewModel.login(email, password)
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -214,7 +218,7 @@ fun LoginScreen(navController: NavController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(navController: NavController) {
+fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -232,6 +236,18 @@ fun RegisterScreen(navController: NavController) {
             window.navigationBarColor = Color.Black.toArgb()
             WindowInsetsControllerCompat(window, window.decorView)
                 .isAppearanceLightNavigationBars = false
+        }
+    }
+
+    LaunchedEffect(userViewModel.registerResult) {
+        userViewModel.registerResult.collect { newId ->
+            if (newId != null) {
+                navController.navigate("login") {
+                    popUpTo("register") { inclusive = true }
+                }
+            } else {
+                errorMessage = "Failed to register new account"
+            }
         }
     }
 
@@ -347,8 +363,13 @@ fun RegisterScreen(navController: NavController) {
                         errorMessage = "All fields are required"
                     } else {
                         errorMessage = null
-                        Toast.makeText(context, "Registered: $firstName $lastName", Toast.LENGTH_SHORT).show()
-                        navController.navigate("login")
+                        userViewModel.register(
+                            email,
+                            password,
+                            firstName,
+                            lastName,
+                            gender
+                        )
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),

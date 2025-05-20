@@ -9,15 +9,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.auth.FirebaseAuth
+import com.example.healthmap.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ResetScreen(navController: NavController) {
+fun ResetScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
     val context = LocalContext.current
     var email by remember { mutableStateOf(TextFieldValue("")) }
+    var newPassword by remember { mutableStateOf(TextFieldValue("")) }
     var message by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(userViewModel.resetResult) {
+        userViewModel.resetResult.collect { success ->
+            if (success) {
+                navController.navigate("login")
+            } else {
+                message = "Failed to reset password"
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -50,6 +62,13 @@ fun ResetScreen(navController: NavController) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
+            OutlinedTextField(
+                value = newPassword,
+                onValueChange = { newPassword = it },
+                label = { Text("New Password") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -58,20 +77,16 @@ fun ResetScreen(navController: NavController) {
                     if (email.text.isBlank()) {
                         message = "Email cannot be empty"
                     } else {
-                        FirebaseAuth.getInstance()
-                            .sendPasswordResetEmail(email.text)
-                            .addOnCompleteListener { task ->
-                                message = if (task.isSuccessful) {
-                                    "Reset link sent to ${email.text}"
-                                } else {
-                                    task.exception?.message ?: "Something went wrong"
-                                }
-                            }
+                        // Reset here
+                        userViewModel.resetPassword(
+                            email.text,
+                            newPassword.text
+                        )
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Send Reset Email")
+                Text("Reset")
             }
 
             message?.let {
