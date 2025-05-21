@@ -1,26 +1,44 @@
 {
   "project_info": {
-    "project_number": "26325392050",
-    "project_id": "fit5046-8e39b",
-    "storage_bucket": "fit5046-8e39b.firebasestorage.app"
+    "project_number": "310736295843",
+    "project_id": "healthmap-76e91",
+    "storage_bucket": "healthmap-76e91.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:26325392050:android:2a7606a920d3e5cfa4c7ab",
+        "mobilesdk_app_id": "1:310736295843:android:d8914b6fbabd2057f3ac16",
         "android_client_info": {
           "package_name": "com.example.healthmap"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "310736295843-9v2dl6krj00707rg973hgitm6jlhb3o0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.healthmap",
+            "certificate_hash": "4552776150726b13b9c9f995f4c2dee089ea929d"
+          }
+        },
+        {
+          "client_id": "310736295843-6vaergprnketq35bg6nf715jkvau83pl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDpynE4bQroybQeyoh_x0DmieJXntfXEmo"
+          "current_key": "AIzaSyCKl-ffrYlTkw-9BelXkFT5PoLfAw6_AO0"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "310736295843-6vaergprnketq35bg6nf715jkvau83pl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
