@@ -231,6 +231,7 @@ fun FormScreen(navController: NavController,
                             latitude,
                             planViewModel
                         )
+                        navController.navigate("home")
                     },
                 contentAlignment = Alignment.Center
             ) {
