@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun LoginScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
     val context = LocalContext.current
+    val userViewModel: UserViewModel = viewModel()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -92,7 +93,9 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
     LaunchedEffect(userViewModel.loginSuccess) {
         userViewModel.loginSuccess.collect { success ->
             if (success) {
-                navController.navigate("home")
+                val user = userViewModel.currentUser.value
+                val nameToUse = user?.firstName ?: "User"
+                navController.navigate("home/$nameToUse")
             } else {
                 errorMessage = "Incorrect email or password"
             }

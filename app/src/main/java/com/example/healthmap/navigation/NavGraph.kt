@@ -21,8 +21,17 @@ fun AppNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = "login"
     ) {
-        composable("home") {
-            HomeScreen(userName = "Student 1",navController)
+        composable(
+            route = "home/{userName}",
+            arguments = listOf(
+                navArgument("userName") {
+                    type = NavType.StringType
+                    nullable = false
+                }
+            )
+        ) { backStackEntry ->
+            val userName = backStackEntry.arguments?.getString("userName") ?: "User"
+            HomeScreen(userName = userName, navController = navController)
         }
         composable(
             route = "form/{userName}",

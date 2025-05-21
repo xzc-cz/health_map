@@ -13,11 +13,21 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.healthmap.ui.component.AppTopBar
+import com.example.healthmap.viewmodel.UserViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen( navController: NavController) {
     val context = LocalContext.current
+    val userViewModel: UserViewModel = viewModel()
+    val user = userViewModel.currentUser.collectAsState().value
+
+    LaunchedEffect(Unit) {
+        userViewModel.loadCurrentUserFromFirebase()
+    }
 
     Scaffold(
         topBar = {
@@ -31,9 +41,16 @@ fun ProfileScreen( navController: NavController) {
         Column(modifier = Modifier.padding(16.dp).padding(innerPadding)) {
             ProfileCard(
                 title = "Personal Information",
-                content = listOf("Mr XXXX", "Date of Birth: xxxx/xx/xx")
+                content = listOf(
+                    "${user?.firstName ?: "First"} ${user?.lastName ?: "Last"}",
+                    "Gender: ${user?.gender ?: "-"}"
+                )
             )
-            ProfileCard(title = "Email Address", content = listOf("xxxxx@xxx.xxx"))
+
+            ProfileCard(
+                title = "Email Address",
+                content = listOf(user?.email ?: "example@domain.com")
+            )
             ProfileCard(title = "Password", content = listOf("**********"))
         }
     }

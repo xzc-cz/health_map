@@ -27,6 +27,16 @@ fun AppDrawer(navController: NavController){
         Spacer(modifier = Modifier.height(8.dp))
         Text("About App", color = Color.White, modifier = Modifier.clickable {  })
         Spacer(modifier = Modifier.weight(1f))
-        Text("Log Out", modifier = Modifier.clickable {  }, color = Color.White)
+        Text(
+            text = "Log Out",
+            color = Color.White,
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier.clickable {
+                navController.navigate("login") {
+                    popUpTo("home") { inclusive = true }
+                }
+            },
+            textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
+        )
     }
 }

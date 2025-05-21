@@ -27,6 +27,8 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _resetResult = MutableSharedFlow<Boolean>()
     val resetResult: SharedFlow<Boolean> = _resetResult
 
+    private val _currentUser = MutableStateFlow<UserDto?>(null)
+    val currentUser: StateFlow<UserDto?> = _currentUser
     //private val _registerResult = MutableStateFlow<String?>(null)
 
     fun login(
@@ -39,6 +41,10 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
                 .signInWithEmailAndPassword(email, password)
                 .await()
 
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            val snapshot = firestore.collection("users").document(userId).get().await()
+            val user = snapshot.toObject(UserDto::class.java)
+            _currentUser.value = user
             // 登录成功，发送 true
             _loginSuccess.emit(true)
 
@@ -100,5 +106,16 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+
+    fun loadCurrentUserFromFirebase() = viewModelScope.launch {
+        try {
+            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val snapshot = firestore.collection("users").document(userId).get().await()
+            val user = snapshot.toObject(UserDto::class.java)
+            _currentUser.value = user
+        } catch (e: Exception) {
+            Log.e("Profile", "Failed to load user: ${e.message}")
+        }
+    }
 
 }
