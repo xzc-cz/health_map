@@ -83,10 +83,11 @@ fun ResetScreen(navController: NavController, userViewModel: UserViewModel = vie
                         message = "Email cannot be empty"
                     } else {
                         // Reset here
-                        userViewModel.resetPassword(
-                            email.text,
-                            newPassword.text
-                        )
+//                        userViewModel.resetPassword(
+//                            email.text,
+//                            newPassword.text
+//                        )
+                        userViewModel.resetPassword(email.text)
                     }
                 },
                 modifier = Modifier.fillMaxWidth()

@@ -19,7 +19,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
 import com.example.healthmap.R
 import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.style.TextAlign
@@ -30,7 +34,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.healthmap.viewmodel.UserViewModel
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.flow.collectLatest
+
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,6 +52,33 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val isInPreview = LocalInspectionMode.current
+    val googleSignInClient = remember {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken("310736295843-6vaergprnketq35bg6nf715jkvau83pl.apps.googleusercontent.com") // 🔁 替换成你 Firebase 上的 Web client ID
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, gso)
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+            FirebaseAuth.getInstance().signInWithCredential(credential)
+                .addOnCompleteListener { authResult ->
+                    if (authResult.isSuccessful) {
+                        navController.navigate("home")
+                    } else {
+                        Toast.makeText(context, "Google login failed", Toast.LENGTH_SHORT).show()
+                    }
+                }
+        } catch (e: ApiException) {
+            Toast.makeText(context, "Google sign-in error: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     if (!isInPreview && context is Activity) {
         val window = context.window
@@ -96,7 +134,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f)) // 透明度可调
+                    .background(Color.Black.copy(alpha = 0.5f))
             )
 
             // page detail
@@ -196,6 +234,23 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     Text("Login")
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        launcher.launch(googleSignInClient.signInIntent)
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    )
+                ) {
+                    Icon(Icons.Default.AccountCircle, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Sign in with Google")
+                }
+
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Forgot Password
@@ -214,7 +269,6 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
         }
     }
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -239,17 +293,33 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
         }
     }
 
-    LaunchedEffect(userViewModel.registerResult) {
-        userViewModel.registerResult.collect { newId ->
-            if (newId != null) {
-                navController.navigate("login") {
-                    popUpTo("register") { inclusive = true }
+    //val registerResult by userViewModel.registerResult.collectAsState()
+
+    LaunchedEffect(Unit) {
+        userViewModel.registerResult.collectLatest { result ->
+            when (result) {
+                "SUCCESS" -> {
+                    Toast.makeText(context, "Registration successful", Toast.LENGTH_SHORT).show()
+                    userViewModel.resetRegisterResult()
+                    navController.navigate("login") {
+                        popUpTo("register") { inclusive = true }
+                    }
                 }
-            } else {
-                errorMessage = "Failed to register new account"
+                "EXISTS" -> {
+                    errorMessage = "Account already exists"
+                    userViewModel.resetRegisterResult()
+                }
+                "FAIL" -> {
+                    errorMessage = "Failed to register new account"
+                    userViewModel.resetRegisterResult()
+                }
+                null -> {
+                    // do nothing
+                }
             }
         }
     }
+
 
     Scaffold(
         topBar = {
