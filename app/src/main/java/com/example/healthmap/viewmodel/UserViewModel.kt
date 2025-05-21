@@ -92,14 +92,13 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
 
     fun resetPassword(email: String) = viewModelScope.launch {
         try {
-            com.google.firebase.auth.FirebaseAuth.getInstance()
-                .sendPasswordResetEmail(email)
-                .await()
+            FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
             _resetResult.emit(true)
         } catch (e: Exception) {
             Log.e("ResetPassword", "Error: ${e.message}")
             _resetResult.emit(false)
         }
     }
+
 
 }
