@@ -1,5 +1,6 @@
 package com.example.healthmap.ui.screen
 
+import com.example.healthmap.ui.component.AppTopBar
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -218,9 +219,13 @@ fun ResetScreen(navController: NavController, userViewModel: UserViewModel = vie
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(title = { Text("Reset Password") })
+            AppTopBar(
+                title = "Reset Password",
+                isHomeScreen = false,
+                onNavigationClick = { navController.popBackStack() }
+            )
         }
-    ) { padding ->
+    ){ padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

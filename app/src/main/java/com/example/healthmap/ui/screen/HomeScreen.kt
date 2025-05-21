@@ -1,6 +1,5 @@
 package com.example.healthmap.ui.screen
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,49 +7,41 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.healthmap.R
 import com.example.healthmap.ui.component.AppDrawer
 import com.example.healthmap.ui.component.AppTopBar
 import com.example.healthmap.viewmodel.PlanViewModel
+import com.example.healthmap.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    userName: String = "User Name",
     navController: NavHostController,
     planViewModel: PlanViewModel = viewModel()
 ) {
     planViewModel.updateAllFromCloud()
-
+    val userViewModel: UserViewModel = viewModel()
+    val user by userViewModel.currentUser.collectAsState()
+    val userName = user?.firstName ?: "User"
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val view = LocalView.current
-    val window = (context as ComponentActivity).window
 
-    SideEffect {
-        window.statusBarColor = Color.Black.toArgb()
-        WindowInsetsControllerCompat(window, view).isAppearanceLightStatusBars = false
+    LaunchedEffect(Unit) {
+        userViewModel.loadCurrentUserFromFirebase()
     }
 
     ModalNavigationDrawer(
@@ -125,7 +116,7 @@ fun HomeScreen(
                                 .height(50.dp)
                                 .background(Color.Black)
                                 .clickable {
-                                    navController.navigate("form/${userName}")
+                                    navController.navigate("form/$userName")
                                 },
                             contentAlignment = Alignment.Center
                         ) {

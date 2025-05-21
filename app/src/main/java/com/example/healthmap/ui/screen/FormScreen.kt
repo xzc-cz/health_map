@@ -1,6 +1,5 @@
 package com.example.healthmap.ui.screen
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
@@ -31,11 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.healthmap.model.Plan
@@ -62,11 +56,7 @@ fun FormScreen(navController: NavController,
                userName: String,
                planViewModel: PlanViewModel = viewModel()) {
     val planCount by planViewModel.getCount().collectAsState(initial = 0)
-
     var showMap by remember { mutableStateOf(true) }
-    val context = LocalContext.current
-    val view = LocalView.current
-    val window = (context as ComponentActivity).window
     var activityName by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf(LocalTime.now()) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
@@ -78,12 +68,6 @@ fun FormScreen(navController: NavController,
             center(Point.fromLngLat(longitude, latitude))
         }
     }
-
-    SideEffect {
-        window.statusBarColor = Color.Black.toArgb()
-        WindowInsetsControllerCompat(window, view).isAppearanceLightStatusBars = false
-    }
-
 
     Scaffold(
         topBar = {

@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.healthmap.model.UserDto
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -29,29 +28,23 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _currentUser = MutableStateFlow<UserDto?>(null)
     val currentUser: StateFlow<UserDto?> = _currentUser
-    //private val _registerResult = MutableStateFlow<String?>(null)
 
-    fun login(
-        email: String,
-        password: String,
-    ) = viewModelScope.launch {
+    private val _loginError = MutableSharedFlow<String?>()
+    val loginError: SharedFlow<String?> = _loginError
+
+    fun login(email: String, password: String) = viewModelScope.launch {
         try {
-            // 使用 Firebase Authentication 登录
-            com.google.firebase.auth.FirebaseAuth.getInstance()
+            FirebaseAuth.getInstance()
                 .signInWithEmailAndPassword(email, password)
                 .await()
 
-            val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
-            val snapshot = firestore.collection("users").document(userId).get().await()
-            val user = snapshot.toObject(UserDto::class.java)
-            _currentUser.value = user
-            // 登录成功，发送 true
             _loginSuccess.emit(true)
-
+            _loginError.emit(null) // Clear previous error
         } catch (e: Exception) {
-            // 登录失败，记录错误并发送 false
-            Log.e("Login", "FirebaseAuth login error: ${e.message}")
+            val errorMessage = e.localizedMessage ?: "Login failed due to an unknown error."
+            Log.e("Login", "Login failed: $errorMessage")
             _loginSuccess.emit(false)
+            _loginError.emit("Login failed: $errorMessage")
         }
     }
 
@@ -106,7 +99,6 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-
     fun loadCurrentUserFromFirebase() = viewModelScope.launch {
         try {
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
@@ -117,5 +109,4 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
             Log.e("Profile", "Failed to load user: ${e.message}")
         }
     }
-
 }

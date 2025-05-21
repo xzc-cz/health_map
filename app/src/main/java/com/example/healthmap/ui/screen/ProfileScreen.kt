@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -21,7 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen( navController: NavController) {
-    val context = LocalContext.current
     val userViewModel: UserViewModel = viewModel()
     val user = userViewModel.currentUser.collectAsState().value
 
@@ -51,7 +49,6 @@ fun ProfileScreen( navController: NavController) {
                 title = "Email Address",
                 content = listOf(user?.email ?: "example@domain.com")
             )
-            ProfileCard(title = "Password", content = listOf("**********"))
         }
     }
 }

@@ -8,7 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -18,21 +17,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
 import com.example.healthmap.R
-import android.app.Activity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.core.view.WindowInsetsControllerCompat
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.text.style.TextAlign
-import com.mapbox.maps.extension.style.expressions.dsl.generated.color
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import com.example.healthmap.viewmodel.UserViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -40,22 +31,43 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.collectLatest
-
-
-
+import com.example.healthmap.ui.component.AppTopBar
+import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
     val context = LocalContext.current
-    val userViewModel: UserViewModel = viewModel()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val isInPreview = LocalInspectionMode.current
+    val loginError = remember { mutableStateOf<String?>(null) }
+    val loginSuccess = userViewModel.loginSuccess.collectAsState(initial = false).value
+    val currentUser = userViewModel.currentUser.collectAsState().value
+
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            userViewModel.loadCurrentUserFromFirebase()
+        }
+    }
+
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        userViewModel.loginError.collectLatest { message ->
+            loginError.value = message
+        }
+    }
+
     val googleSignInClient = remember {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("310736295843-6vaergprnketq35bg6nf715jkvau83pl.apps.googleusercontent.com") // 🔁 替换成你 Firebase 上的 Web client ID
+            .requestIdToken("YOUR-WEB-CLIENT-ID.apps.googleusercontent.com")
             .requestEmail()
             .build()
         GoogleSignIn.getClient(context, gso)
@@ -71,7 +83,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
             FirebaseAuth.getInstance().signInWithCredential(credential)
                 .addOnCompleteListener { authResult ->
                     if (authResult.isSuccessful) {
-                        navController.navigate("home")
+                        userViewModel.loadCurrentUserFromFirebase()
                     } else {
                         Toast.makeText(context, "Google login failed", Toast.LENGTH_SHORT).show()
                     }
@@ -81,51 +93,35 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
         }
     }
 
-    if (!isInPreview && context is Activity) {
-        val window = context.window
-        SideEffect {
-            window.navigationBarColor = Color.Black.toArgb()
-            WindowInsetsControllerCompat(window, window.decorView)
-                .isAppearanceLightNavigationBars = false
+    LaunchedEffect(loginSuccess) {
+        if (loginSuccess) {
+            userViewModel.loadCurrentUserFromFirebase()
         }
     }
 
-    LaunchedEffect(userViewModel.loginSuccess) {
-        userViewModel.loginSuccess.collect { success ->
-            if (success) {
-                val user = userViewModel.currentUser.value
-                val nameToUse = user?.firstName ?: "User"
-                navController.navigate("home/$nameToUse")
-            } else {
-                errorMessage = "Incorrect email or password"
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            navController.navigate("home") {
+                popUpTo("login") { inclusive = true }
             }
         }
     }
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "HEALTH-MAP",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Black
-                )
+            AppTopBar(
+                title = "HEALTH-MAP",
+                isHomeScreen = false,
+                showNavigationIcon = false
             )
         }
-    ) { padding ->
-
+    ){ padding ->
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-
 
             Image(
                 painter = painterResource(id = R.drawable.welcome),
@@ -140,7 +136,6 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     .background(Color.Black.copy(alpha = 0.5f))
             )
 
-            // page detail
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -152,28 +147,30 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     text = "WELCOME!",
                     style = MaterialTheme.typography.headlineLarge,
                     color = Color.White,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 40.dp)
+                        .padding(bottom = 30.dp)
                 )
                 Text(
                     text = "T0",
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineLarge,
                     color = Color.White,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 40.dp)
+                        .padding(bottom = 30.dp)
                 )
                 Text(
                     text = "HEALTH-MAP",
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineLarge,
                     color = Color.White,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 120.dp)
+                        .padding(bottom = 170.dp)
                 )
 
-                // Email
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -189,10 +186,8 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     )
                 )
 
-
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Password
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -209,15 +204,13 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     )
                 )
 
-                // Error message
-                errorMessage?.let {
+                loginError.value?.let {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = it, color = MaterialTheme.colorScheme.error)
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Login button
                 Button(
                     onClick = {
                         if (email.isBlank() || password.isBlank()) {
@@ -256,18 +249,15 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Forgot Password
                 TextButton(onClick = {
                     navController.navigate("reset")
                 }) {
                     Text("Forgot Password?", color = Color.White)
                 }
 
-                // Register
                 TextButton(onClick = { navController.navigate("register") }) {
                     Text("Don't have an account? Register", color = Color.White)
                 }
-
             }
         }
     }
@@ -285,18 +275,6 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
     val genderOptions = listOf("Male", "Female", "Other")
     var expanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    val isInPreview = LocalInspectionMode.current
-
-    if (!isInPreview && context is Activity) {
-        val window = context.window
-        SideEffect {
-            window.navigationBarColor = Color.Black.toArgb()
-            WindowInsetsControllerCompat(window, window.decorView)
-                .isAppearanceLightNavigationBars = false
-        }
-    }
-
-    //val registerResult by userViewModel.registerResult.collectAsState()
 
     LaunchedEffect(Unit) {
         userViewModel.registerResult.collectLatest { result ->
@@ -317,28 +295,18 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
                     userViewModel.resetRegisterResult()
                 }
                 null -> {
-                    // do nothing
                 }
             }
         }
     }
 
-
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Register",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
-                    )
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Black
-                )
+            AppTopBar(
+                title = "Register",
+                isHomeScreen = false,
+                onNavigationClick = { navController.popBackStack() }
             )
-
         }
     ) { padding ->
         Column(

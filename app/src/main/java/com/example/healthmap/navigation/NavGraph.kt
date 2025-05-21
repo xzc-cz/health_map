@@ -13,7 +13,7 @@ import com.example.healthmap.ui.screen.MapScreen
 import com.example.healthmap.ui.screen.ProfileScreen
 import com.example.healthmap.ui.screen.RegisterScreen
 import com.example.healthmap.ui.screen.ResetScreen
-
+import com.example.healthmap.ui.screen.AboutAppScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
@@ -21,17 +21,8 @@ fun AppNavGraph(navController: NavHostController) {
         navController = navController,
         startDestination = "login"
     ) {
-        composable(
-            route = "home/{userName}",
-            arguments = listOf(
-                navArgument("userName") {
-                    type = NavType.StringType
-                    nullable = false
-                }
-            )
-        ) { backStackEntry ->
-            val userName = backStackEntry.arguments?.getString("userName") ?: "User"
-            HomeScreen(userName = userName, navController = navController)
+        composable("home") {
+            HomeScreen(navController = navController)
         }
         composable(
             route = "form/{userName}",
@@ -59,6 +50,9 @@ fun AppNavGraph(navController: NavHostController) {
         }
         composable("reset") {
             ResetScreen(navController)
+        }
+        composable("about") {
+            AboutAppScreen(navController = navController)
         }
     }
 }
