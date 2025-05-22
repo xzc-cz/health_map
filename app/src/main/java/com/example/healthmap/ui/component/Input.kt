@@ -173,31 +173,21 @@ private fun DateInput(
     val calendar = Calendar.getInstance().apply {
         set(selectedDate.year, selectedDate.monthValue - 1, selectedDate.dayOfMonth)
     }
-    val displayValue = remember(selectedDate) { toDate(selectedDate) }
+    var displayValue by remember { mutableStateOf("") }
 
-    Column(modifier = modifier) {
-        if (label.isNotEmpty()) {
-            Text(text = label, modifier = Modifier.padding(start = 12.dp, bottom = 2.dp))
+    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
+        TextInput(displayValue, label, InputType.DATE, disabled, false, toDate(selectedDate), Icons.Outlined.DateRange, modifier.align(Alignment.Center)) {
+            displayValue = it
         }
-        OutlinedTextField(
-            value = displayValue,
-            onValueChange = {},
-            enabled = !disabled,
-            readOnly = true,
-            leadingIcon = { Icon(Icons.Outlined.DateRange, contentDescription = null) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(enabled = !disabled) {
-                    DatePickerDialog(
-                        context,
-                        { _, y, m, d -> onDateSelected(LocalDate.of(y, m + 1, d)) },
-                        calendar.get(Calendar.YEAR),
-                        calendar.get(Calendar.MONTH),
-                        calendar.get(Calendar.DAY_OF_MONTH)
-                    ).show()
-                },
-            shape = RoundedCornerShape(8.dp)
-        )
+        if (!disabled) {
+            TextInput(" ", "", InputType.TEXT, true, false, "", null, modifier.align(Alignment.Center).clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                DatePickerDialog(context, { _, y, m, d -> onDateSelected(LocalDate.of(y, m + 1, d)) },
+                    calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+            }) {}
+        }
     }
 }
 
@@ -210,40 +200,27 @@ private fun TimeInput(
     onTimeSelected: (LocalTime) -> Unit
 ) {
     val context = LocalContext.current
-    val displayValue = remember(selectedTime) { toTime(selectedTime) }
+    val now = LocalDate.now()
+    val calendar = Calendar.getInstance().apply {
+        set(now.year, now.monthValue - 1, now.dayOfMonth, selectedTime.hour, selectedTime.minute)
+    }
+    var displayValue by remember { mutableStateOf("") }
 
-    Column(modifier = modifier) {
-        if (label.isNotEmpty()) {
-            Text(text = label, modifier = Modifier.padding(start = 12.dp, bottom = 2.dp))
+    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
+        TextInput(displayValue, label, InputType.TIME, disabled, false, toTime(selectedTime), ImageVector.vectorResource(id = R.drawable.ic_outline_schedule), modifier.align(Alignment.Center)) {
+            displayValue = it
         }
-        OutlinedTextField(
-            value = displayValue,
-            onValueChange = {},
-            enabled = !disabled,
-            readOnly = true,
-            leadingIcon = {
-                Icon(
-                    imageVector = ImageVector.vectorResource(id = R.drawable.ic_outline_schedule),
-                    contentDescription = null
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(enabled = !disabled) {
-                    val now = LocalTime.now()
-                    TimePickerDialog(
-                        context,
-                        { _, h, m -> onTimeSelected(LocalTime.of(h, m)) },
-                        selectedTime.hour,
-                        selectedTime.minute,
-                        true
-                    ).show()
-                },
-            shape = RoundedCornerShape(8.dp)
-        )
+        if (!disabled) {
+            TextInput(" ", "", InputType.TEXT, true, false, "", null, modifier.align(Alignment.Center).clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                TimePickerDialog(context, { _, h, m -> onTimeSelected(LocalTime.of(h, m)) },
+                    calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
+            }) {}
+        }
     }
 }
-
 
 private class DecimalFormatter(symbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance()) {
     private val thousandsSeparator = symbols.groupingSeparator
