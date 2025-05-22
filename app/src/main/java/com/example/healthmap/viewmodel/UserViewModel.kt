@@ -124,7 +124,6 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
                 )
                 .await()
 
-            // 重新加载最新数据
             loadCurrentUserFromFirebase()
 
         } catch (e: Exception) {
