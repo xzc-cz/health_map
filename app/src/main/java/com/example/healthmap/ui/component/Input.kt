@@ -4,23 +4,13 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DateRange
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -37,15 +27,10 @@ import java.text.DecimalFormatSymbols
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
-import java.util.Locale
+import java.util.*
 
 enum class InputType {
-    TEXT,
-    PASSWORD,
-    NUMBER,
-    DATE,
-    TIME
+    TEXT, PASSWORD, NUMBER, DATE, TIME
 }
 
 @Composable
@@ -60,58 +45,22 @@ fun Input(
     onValueChange: (Any) -> Unit,
 ) {
     when (type) {
-        InputType.TEXT -> TextInput(
-            value = value.toString(),
-            label = label,
-            type = InputType.TEXT,
-            disabled = disabled,
-            placeholder = placeholder,
-            leadingIcon = leadingIcon,
-            modifier = modifier
-        ) { onValueChange(it) }
-
-        InputType.PASSWORD -> TextInput(
-            value = value.toString(),
-            label = label,
-            type = InputType.PASSWORD,
-            disabled = disabled,
-            placeholder = placeholder,
-            leadingIcon = leadingIcon,
-            modifier = modifier
-        ) { onValueChange(it) }
-
-        InputType.NUMBER -> NumberInput(
-            number = value as Double,
-            label = label,
-            disabled = disabled,
-            leadingIcon = leadingIcon,
-            modifier = modifier
-        ) { onValueChange(it) }
-
-        InputType.DATE -> DateInput(
-            selectedDate = value as LocalDate,
-            label = label,
-            disabled = disabled,
-            modifier = modifier
-        ) { onValueChange(it) }
-
-        InputType.TIME -> TimeInput(
-            selectedTime = value as LocalTime,
-            label = label,
-            disabled = disabled,
-            modifier = modifier
-        ) { onValueChange(it) }
+        InputType.TEXT -> TextInput(value.toString(), label, type, disabled, true, placeholder, leadingIcon, modifier) { onValueChange(it) }
+        InputType.PASSWORD -> TextInput(value.toString(), label, type, disabled, true, placeholder, leadingIcon, modifier) { onValueChange(it) }
+        InputType.NUMBER -> NumberInput(value as Double, label, disabled, leadingIcon, modifier) { onValueChange(it) }
+        InputType.DATE -> DateInput(value as LocalDate, label, disabled, modifier) { onValueChange(it) }
+        InputType.TIME -> TimeInput(value as LocalTime, label, disabled, modifier) { onValueChange(it) }
     }
 }
 
 @Composable
 private fun TextInput(
-    value: String = "",
-    label: String = "",
-    type: InputType = InputType.TEXT,
-    disabled: Boolean = false,
-    enableInput: Boolean = true,
-    placeholder: String = "",
+    value: String,
+    label: String,
+    type: InputType,
+    disabled: Boolean,
+    enableInput: Boolean,
+    placeholder: String,
     leadingIcon: ImageVector?,
     modifier: Modifier,
     onValueChange: (String) -> Unit,
@@ -122,15 +71,10 @@ private fun TextInput(
 
     Column {
         if (label.isNotEmpty()) {
-            Text(
-                text = label,
-                modifier = Modifier.padding(12.dp, 0.dp, 0.dp, 2.dp)
-            )
+            Text(text = label, modifier = Modifier.padding(start = 12.dp, bottom = 2.dp))
         }
         OutlinedTextField(
-            modifier = modifier
-                .padding(10.dp, 2.dp)
-                .fillMaxWidth(),
+            modifier = modifier.padding(vertical = 2.dp).fillMaxWidth(),
             enabled = !disabled,
             value = displayValue,
             onValueChange = {
@@ -141,61 +85,39 @@ private fun TextInput(
                         trueValue = trueValue.substring(0, it.length)
                     }
                     onValueChange(trueValue)
-                    displayValue = if (inputType == InputType.TEXT) {
-                        it
-                    } else {
-                        "*".repeat(it.length)
-                    }
+                    displayValue = if (inputType == InputType.TEXT) it else "*".repeat(it.length)
                 } else {
                     onValueChange("")
                     displayValue = ""
                 }
             },
             leadingIcon = {
-                if (leadingIcon != null)
-                    Icon(imageVector = leadingIcon, contentDescription = null)
+                if (leadingIcon != null) Icon(imageVector = leadingIcon, contentDescription = null)
             },
             trailingIcon = {
-                if (value.isNotEmpty()) { // When the input value is  ot empty
-                    // Show password button
-                    if (type == InputType.PASSWORD) { // When the input type is password
-                        when (inputType) {
-                            InputType.TEXT -> Icon(
-                                modifier = Modifier.clickable(
-                                    onClick = {
-                                        inputType = InputType.PASSWORD
-                                        displayValue = "*".repeat(value.length)
-                                    }
-                                ),
-                                imageVector = ImageVector.vectorResource(
-                                    id = R.drawable.ic_outline_visibility_off
-                                ),
-                                contentDescription = null
-                            )
-
-                            InputType.PASSWORD -> Icon(
-                                modifier = Modifier.clickable(
-                                    onClick = {
-                                        inputType = InputType.TEXT
-                                        displayValue = value
-                                    }
-                                ),
-                                imageVector = ImageVector.vectorResource(
-                                    id = R.drawable.ic_outline_visibility
-                                ),
-                                contentDescription = null
-                            )
-
-                            InputType.NUMBER -> {}
-                            InputType.DATE -> {}
-                            InputType.TIME -> {}
-                        }
+                if (value.isNotEmpty() && type == InputType.PASSWORD) {
+                    when (inputType) {
+                        InputType.TEXT -> Icon(
+                            modifier = Modifier.clickable {
+                                inputType = InputType.PASSWORD
+                                displayValue = "*".repeat(value.length)
+                            },
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_outline_visibility_off),
+                            contentDescription = null
+                        )
+                        InputType.PASSWORD -> Icon(
+                            modifier = Modifier.clickable {
+                                inputType = InputType.TEXT
+                                displayValue = value
+                            },
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_outline_visibility),
+                            contentDescription = null
+                        )
+                        else -> {}
                     }
                 }
             },
-            placeholder = {
-                Text(text = placeholder)
-            },
+            placeholder = { Text(text = placeholder) },
             shape = RoundedCornerShape(8.dp)
         )
     }
@@ -206,59 +128,34 @@ private fun NumberInput(
     number: Double = 0.0,
     label: String = "",
     disabled: Boolean = false,
-    leadingIcon: ImageVector? = ImageVector.vectorResource(
-        id = R.drawable.ic_outline_pin
-    ),
+    leadingIcon: ImageVector? = ImageVector.vectorResource(id = R.drawable.ic_outline_pin),
     modifier: Modifier,
     onValueChanged: (Double) -> Unit
 ) {
-    val formatter = DecimalFormatter(symbols = DecimalFormatSymbols(Locale.US))
-    var trueValue by remember { mutableDoubleStateOf(0.0) }
+    val formatter = DecimalFormatter(DecimalFormatSymbols(Locale.US))
     var displayValue by remember { mutableStateOf("") }
 
     Column {
         if (label.isNotEmpty()) {
-            Text(
-                text = label,
-                modifier = Modifier.padding(12.dp, 0.dp, 0.dp, 2.dp)
-            )
+            Text(text = label, modifier = Modifier.padding(start = 12.dp, bottom = 2.dp))
         }
         OutlinedTextField(
-            modifier = modifier
-                .padding(10.dp, 2.dp)
-                .fillMaxWidth(),
+            modifier = modifier.padding(vertical = 2.dp).fillMaxWidth(),
             enabled = !disabled,
             value = displayValue,
             onValueChange = {
-                trueValue = if (it.length == 1 && it == "-") {
-                    displayValue = it
-                    0.0
-                } else {
-                    displayValue = formatter.cleanup(it)
-                    when (displayValue.isNotEmpty()) {
-                        true -> if (decimalPointAtLast(displayValue)) {
-                            displayValue.replace(".", "").toDouble()
-                        } else {
-                            displayValue.toDouble()
-                        }
-
-                        false -> 0.0
-                    }
+                displayValue = it // 保留用户输入的完整内容
+                val cleaned = formatter.cleanup(it) // 清洗只用于转换
+                val parsed = cleaned.toDoubleOrNull()
+                if (parsed != null) {
+                    onValueChanged(parsed)
                 }
-                onValueChanged(trueValue)
             },
             leadingIcon = {
-                if (leadingIcon != null)
-                    Icon(
-                        imageVector = leadingIcon, contentDescription = null
-                    )
+                if (leadingIcon != null) Icon(imageVector = leadingIcon, contentDescription = null)
             },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text
-            ),
-            placeholder = {
-                Text(text = number.toString())
-            },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            placeholder = { Text(text = number.toString()) },
             visualTransformation = DecimalInputVisualTransformation(formatter)
         )
     }
@@ -267,8 +164,8 @@ private fun NumberInput(
 @Composable
 private fun DateInput(
     selectedDate: LocalDate,
-    label: String = "",
-    disabled: Boolean = false,
+    label: String,
+    disabled: Boolean,
     modifier: Modifier,
     onDateSelected: (LocalDate) -> Unit
 ) {
@@ -278,41 +175,18 @@ private fun DateInput(
     }
     var displayValue by remember { mutableStateOf("") }
 
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.CenterStart
-    ) {
-        TextInput(
-            value = displayValue,
-            label = label,
-            disabled = disabled,
-            enableInput = false,
-            placeholder = toDate(selectedDate),
-            leadingIcon = Icons.Outlined.DateRange,
-            modifier = modifier.align(Alignment.Center)
-        ) { displayValue = it }
+    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
+        TextInput(displayValue, label, InputType.DATE, disabled, false, toDate(selectedDate), Icons.Outlined.DateRange, modifier.align(Alignment.Center)) {
+            displayValue = it
+        }
         if (!disabled) {
-            TextInput(
-                label = if (label.isNotEmpty()) " " else "",
-                disabled = true,
-                leadingIcon = null,
-                modifier = modifier
-                    .align(Alignment.Center)
-                    .clickable( // no ripple clickable
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) {
-                        DatePickerDialog(
-                            context,
-                            { _, year, month, dayOfMonth ->
-                                onDateSelected(LocalDate.of(year, month + 1, dayOfMonth))
-                            },
-                            calendar.get(Calendar.YEAR),
-                            calendar.get(Calendar.MONTH),
-                            calendar.get(Calendar.DAY_OF_MONTH)
-                        ).show()
-                    }
-            ) { }
+            TextInput(" ", "", InputType.TEXT, true, false, "", null, modifier.align(Alignment.Center).clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                DatePickerDialog(context, { _, y, m, d -> onDateSelected(LocalDate.of(y, m + 1, d)) },
+                    calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+            }) {}
         }
     }
 }
@@ -320,178 +194,77 @@ private fun DateInput(
 @Composable
 private fun TimeInput(
     selectedTime: LocalTime,
-    label: String = "",
-    disabled: Boolean = false,
+    label: String,
+    disabled: Boolean,
     modifier: Modifier,
     onTimeSelected: (LocalTime) -> Unit
 ) {
     val context = LocalContext.current
-    val currentDate = LocalDate.now()
+    val now = LocalDate.now()
     val calendar = Calendar.getInstance().apply {
-        set(
-            currentDate.year, currentDate.monthValue - 1, currentDate.dayOfMonth,
-            selectedTime.hour, selectedTime.minute, selectedTime.second
-        )
+        set(now.year, now.monthValue - 1, now.dayOfMonth, selectedTime.hour, selectedTime.minute)
     }
     var displayValue by remember { mutableStateOf("") }
 
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.CenterStart
-    ) {
-        TextInput(
-            value = displayValue,
-            label = label,
-            disabled = disabled,
-            enableInput = false,
-            placeholder = toTime(selectedTime),
-            leadingIcon = ImageVector.vectorResource(
-                id = R.drawable.ic_outline_schedule
-            ),
-            modifier = modifier.align(Alignment.Center)
-        ) { displayValue = it }
+    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
+        TextInput(displayValue, label, InputType.TIME, disabled, false, toTime(selectedTime), ImageVector.vectorResource(id = R.drawable.ic_outline_schedule), modifier.align(Alignment.Center)) {
+            displayValue = it
+        }
         if (!disabled) {
-            TextInput(
-                label = if (label.isNotEmpty()) " " else "",
-                disabled = true,
-                leadingIcon = null,
-                modifier = modifier
-                    .align(Alignment.Center)
-                    .clickable( // no ripple clickable
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
-                    ) {
-                        TimePickerDialog(
-                            context,
-                            { _, hourOfDay, minute ->
-                                onTimeSelected(LocalTime.of(hourOfDay, minute))
-                            },
-                            calendar.get(Calendar.HOUR_OF_DAY),
-                            calendar.get(Calendar.MINUTE),
-                            true
-                        ).show()
-                    }
-            ) { }
+            TextInput(" ", "", InputType.TEXT, true, false, "", null, modifier.align(Alignment.Center).clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) {
+                TimePickerDialog(context, { _, h, m -> onTimeSelected(LocalTime.of(h, m)) },
+                    calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true).show()
+            }) {}
         }
     }
 }
 
-private class DecimalFormatter(
-    symbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance()
-) {
-
+private class DecimalFormatter(symbols: DecimalFormatSymbols = DecimalFormatSymbols.getInstance()) {
     private val thousandsSeparator = symbols.groupingSeparator
     private val decimalSeparator = symbols.decimalSeparator
     private val minusSign = symbols.minusSign
 
-    fun isNumeric(s: String): Boolean {
-        return try {
-            s.toDouble()
-            true
-        } catch (e: NumberFormatException) {
-            false
-        }
-    }
-
     fun cleanup(input: String): String {
-        if (!isNumeric(input))return ""
-        if (input.matches("0+".toRegex())) return "0"
-
-
         val sb = StringBuilder()
+        var hasDecimal = false
+        var hasMinus = false
 
-        var hasDecimalSep = false
-        var hasMinusSign = false
-
-        for (char in input) {
-            if (char.isDigit()) {
-                sb.append(char)
-                continue
-            }
-            if (char == decimalSeparator && !hasDecimalSep && sb.isNotEmpty()) {
-                sb.append(char)
-                hasDecimalSep = true
-            }
-            if ((char == minusSign || char == '-') && !hasMinusSign && sb.isEmpty()) {
-                sb.append(char)
-                hasMinusSign = true
+        for (ch in input) {
+            if (ch.isDigit()) {
+                sb.append(ch)
+            } else if (ch == decimalSeparator && !hasDecimal) {
+                sb.append(ch)
+                hasDecimal = true
+            } else if ((ch == minusSign || ch == '-') && !hasMinus && sb.isEmpty()) {
+                sb.append(ch)
+                hasMinus = true
             }
         }
 
         return sb.toString()
     }
 
+
     fun formatForVisual(input: String): String {
-
-        val split = input.split(decimalSeparator)
-
-        val intPart = split[0]
-            .reversed()
-            .chunked(3)
-            .joinToString(separator = thousandsSeparator.toString())
-            .reversed()
-
-        val fractionPart = split.getOrNull(1)
-
-        return if (fractionPart == null) intPart else intPart + decimalSeparator + fractionPart
+        val parts = input.split(decimalSeparator)
+        val intPart = parts[0].reversed().chunked(3).joinToString(thousandsSeparator.toString()).reversed()
+        return if (parts.size == 2) "$intPart$decimalSeparator${parts[1]}" else intPart
     }
 }
 
-private class DecimalInputVisualTransformation(
-    private val decimalFormatter: DecimalFormatter
-) : VisualTransformation {
-
+private class DecimalInputVisualTransformation(private val formatter: DecimalFormatter) : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
-
-        val inputText = text.text
-        val formattedNumber = decimalFormatter.formatForVisual(inputText)
-
-        val newText = AnnotatedString(
-            text = formattedNumber,
-            spanStyles = text.spanStyles,
-            paragraphStyles = text.paragraphStyles
-        )
-
-        val offsetMapping = FixedCursorOffsetMapping(
-            contentLength = inputText.length,
-            formattedContentLength = formattedNumber.length
-        )
-
-        return TransformedText(newText, offsetMapping)
+        val raw = text.text
+        val formatted = formatter.formatForVisual(raw)
+        return TransformedText(AnnotatedString(formatted), object : OffsetMapping {
+            override fun originalToTransformed(offset: Int) = formatted.length
+            override fun transformedToOriginal(offset: Int) = raw.length
+        })
     }
 }
 
-private class FixedCursorOffsetMapping(
-    private val contentLength: Int,
-    private val formattedContentLength: Int,
-) : OffsetMapping {
-    override fun originalToTransformed(offset: Int): Int = formattedContentLength
-    override fun transformedToOriginal(offset: Int): Int = contentLength
-}
-
-private fun decimalPointAtLast(text: String): Boolean {
-    var count = 0
-    for (ch in text) {
-        if (ch == '.') {
-            count++
-        }
-
-        if (count > 1) {
-            break
-        }
-    }
-
-    return text.isNotEmpty() &&
-            text.last() == '.' &&
-            count == 1
-}
-
-private fun toDate(localDate: LocalDate): String {
-    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-    return localDate.format(formatter)
-}
-
-private fun toTime(localTime: LocalTime): String {
-    val formatter = DateTimeFormatter.ofPattern("HH:mm")
-    return localTime.format(formatter)
-}
+private fun toDate(date: LocalDate): String = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+private fun toTime(time: LocalTime): String = time.format(DateTimeFormatter.ofPattern("HH:mm"))

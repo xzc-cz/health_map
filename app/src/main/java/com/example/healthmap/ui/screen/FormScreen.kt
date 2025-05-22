@@ -1,38 +1,25 @@
 package com.example.healthmap.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.ThumbUp
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.healthmap.model.Plan
+import com.example.healthmap.ui.component.AppTopBar
 import com.example.healthmap.ui.component.Input
 import com.example.healthmap.ui.component.InputType
 import com.example.healthmap.ui.component.PlanMarkerText
@@ -46,23 +33,27 @@ import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
 import com.mapbox.maps.viewannotation.annotationAnchor
 import com.mapbox.maps.viewannotation.geometry
 import com.mapbox.maps.viewannotation.viewAnnotationOptions
-import com.example.healthmap.ui.component.AppTopBar
 import java.time.LocalDate
 import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FormScreen(navController: NavController,
-               userName: String,
-               planViewModel: PlanViewModel = viewModel()) {
+fun FormScreen(
+    navController: NavController,
+    userName: String,
+    planViewModel: PlanViewModel = viewModel()
+) {
     val planCount by planViewModel.getCount().collectAsState(initial = 0)
+    val context = LocalContext.current
+
     var showMap by remember { mutableStateOf(true) }
     var activityName by remember { mutableStateOf("") }
     var selectedTime by remember { mutableStateOf(LocalTime.now()) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var latitude by remember { mutableDoubleStateOf(0.0) }
     var longitude by remember { mutableDoubleStateOf(0.0) }
-    var mapViewportState = rememberMapViewportState {
+
+    val mapViewportState = rememberMapViewportState {
         setCameraOptions {
             zoom(14.0)
             center(Point.fromLngLat(longitude, latitude))
@@ -93,38 +84,34 @@ fun FormScreen(navController: NavController,
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Activity
                 Input(
                     value = activityName,
                     label = "Your Activity",
                     placeholder = "Enter your activity here",
                     leadingIcon = Icons.Outlined.ThumbUp,
-                    modifier = Modifier.fillMaxWidth(1f)
+                    modifier = Modifier.fillMaxWidth()
                 ) { activityName = it.toString() }
-                // Time
+
                 Input(
                     value = selectedTime,
                     label = "Select Time",
                     type = InputType.TIME,
-                    modifier = Modifier.fillMaxWidth(1f)
+                    modifier = Modifier.fillMaxWidth()
                 ) { selectedTime = it as LocalTime }
-                // Date
+
                 Input(
                     value = selectedDate,
                     label = "Select Date",
                     type = InputType.DATE,
-                    modifier = Modifier.fillMaxWidth(1f)
+                    modifier = Modifier.fillMaxWidth()
                 ) { selectedDate = it as LocalDate }
-                // Location (longitude and latitude)
+
                 Row(
-                    modifier = Modifier.fillMaxWidth(1f),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(0.5f)
-                    ) {
-                        // Longitude
+                    Box(modifier = Modifier.fillMaxWidth(0.5f)) {
                         Input(
                             value = longitude,
                             label = "Longitude",
@@ -133,18 +120,20 @@ fun FormScreen(navController: NavController,
                             modifier = Modifier
                         ) {
                             longitude = it as Double
-                            mapViewportState.flyTo(
-                                CameraOptions.Builder()
-                                    .center(Point.fromLngLat(longitude, latitude))
-                                    .zoom(14.0)
-                                    .build()
-                            )
+                            if (latitude in -90.0..90.0 && longitude in -180.0..180.0) {
+                                mapViewportState.flyTo(
+                                    CameraOptions.Builder()
+                                        .center(Point.fromLngLat(longitude, latitude))
+                                        .zoom(14.0)
+                                        .build()
+                                )
+                            } else {
+                                Toast.makeText(context, "Invalid coordinates", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
-                    // Latitude
-                    Box(
-                        modifier = Modifier.fillMaxWidth(1f)
-                    ) {
+
+                    Box(modifier = Modifier.fillMaxWidth()) {
                         Input(
                             value = latitude,
                             label = "Latitude",
@@ -153,26 +142,27 @@ fun FormScreen(navController: NavController,
                             modifier = Modifier
                         ) {
                             latitude = it as Double
-                            mapViewportState.flyTo(
-                                CameraOptions.Builder()
-                                    .center(Point.fromLngLat(longitude, latitude))
-                                    .zoom(14.0)
-                                    .build()
-                            )
+                            if (latitude in -90.0..90.0 && longitude in -180.0..180.0) {
+                                mapViewportState.flyTo(
+                                    CameraOptions.Builder()
+                                        .center(Point.fromLngLat(longitude, latitude))
+                                        .zoom(14.0)
+                                        .build()
+                                )
+                            } else {
+                                Toast.makeText(context, "Invalid coordinates", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
                 }
+
                 if (showMap) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(1f)
+                            .fillMaxWidth()
                             .height(240.dp)
                             .padding(10.dp)
-                            .border(
-                                width = 0.dp,
-                                color = Color(0, 0, 0, 0),
-                                shape = RectangleShape
-                            ),
+                            .border(0.dp, Color.Transparent, shape = RectangleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         MapboxMap(
@@ -194,10 +184,10 @@ fun FormScreen(navController: NavController,
                                 )
                             }
                         }
-
                     }
                 }
             }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -205,6 +195,11 @@ fun FormScreen(navController: NavController,
                     .padding(10.dp)
                     .background(Color.Black)
                     .clickable {
+                        if (latitude !in -90.0..90.0 || longitude !in -180.0..180.0) {
+                            Toast.makeText(context, "Coordinates out of range", Toast.LENGTH_SHORT).show()
+                            return@clickable
+                        }
+
                         submitPlan(
                             planCount,
                             userName,
@@ -230,19 +225,9 @@ fun FormScreen(navController: NavController,
 }
 
 private fun timeToString(time: LocalTime): String {
-    var hour = time.hour
-    var minute = time.minute
-    return "${
-        if (hour < 10)
-            "0$hour"
-        else
-            hour
-    }:${
-        if (minute < 10)
-            "0$minute"
-        else
-            minute
-    }"
+    val hour = time.hour
+    val minute = time.minute
+    return "${if (hour < 10) "0$hour" else hour}:${if (minute < 10) "0$minute" else minute}"
 }
 
 private fun submitPlan(
