@@ -46,141 +46,153 @@ fun HomeScreen(
         userViewModel.loadCurrentUserFromFirebase()
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            AppDrawer(navController = navController)
-        }
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Scaffold(
-            topBar = {
-                AppTopBar(
-                    title = "Health-Map",
-                    isHomeScreen = true,
-                    onNavigationClick = { scope.launch { drawerState.open() } }
-                )
-            },
-            containerColor = Color(0xFFF2F2F2)
-        ) { innerPadding ->
-            LazyColumn(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-                    .padding(horizontal = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Hi!  $userName",
-                        modifier = Modifier.padding(horizontal = 10.dp),
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                }
+        Image(
+            painter = painterResource(id = R.drawable.home_background),
+            contentDescription = "Background Image",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-                item {
-                    Image(
-                        painter = painterResource(id = R.drawable.home1),
-                        contentDescription = "Home Image",
-                        contentScale = ContentScale.Crop,
-                        alignment = Alignment.TopCenter,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp)
-                            .height(600.dp)
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                AppDrawer(navController = navController)
+            }
+        ) {
+            Scaffold(
+                topBar = {
+                    AppTopBar(
+                        title = "Health-Map",
+                        isHomeScreen = true,
+                        onNavigationClick = { scope.launch { drawerState.open() } }
                     )
-                }
+                },
+                containerColor = Color.Transparent
+            ) { innerPadding ->
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                        .padding(horizontal = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Hi!  $userName",
+                            modifier = Modifier.padding(horizontal = 10.dp),
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
 
-                item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
+                    item {
+                        Image(
+                            painter = painterResource(id = R.drawable.home1),
+                            contentDescription = "Home Image",
+                            contentScale = ContentScale.Crop,
+                            alignment = Alignment.TopCenter,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp)
+                                .height(600.dp)
+                        )
+                    }
+
+                    item {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp)
+                                    .height(50.dp)
+                                    .background(Color.Black, shape = RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        navController.navigate("form/$userName")
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Create New Schedule",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Divider(
+                            color = Color.Gray,
+                            thickness = 1.dp,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(10.dp)
-                                .height(50.dp)
-                                .background(Color.Black)
-                                .clickable {
-                                    navController.navigate("form/$userName")
-                                },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "Create New Schedule",
-                                color = Color.White,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
-                }
 
-                item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Divider(
-                        color = Color.Gray,
-                        thickness = 1.dp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
+                    item {
+                        Text(
+                            text = "Activities",
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineMedium
+                        )
+                    }
 
-                item {
-                    Text(
-                        text = "Activities",
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-                }
+                    items(plans) { plan ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                                .shadow(4.dp, RoundedCornerShape(12.dp))
+                                .background(Color.White, shape = RoundedCornerShape(12.dp))
+                                .padding(16.dp)
+                        ) {
+                            Column(modifier = Modifier.fillMaxWidth()) {
 
-                items(plans) { plan ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
-                            .shadow(4.dp, RoundedCornerShape(12.dp))
-                            .background(Color.White, shape = RoundedCornerShape(12.dp))
-                            .padding(16.dp)
-                    ) {
-                        Column(modifier = Modifier.fillMaxWidth()) {
+                                Text(
+                                    text = plan.name,
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
 
-                            Text(
-                                text = plan.name,
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                            )
+                                Text(
+                                    text = plan.activity,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
 
-                            Text(
-                                text = plan.activity,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                                Text(
+                                    text = "${plan.date}  ${plan.time}",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
 
-                            Text(
-                                text = "${plan.date}  ${plan.time}",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                                Spacer(modifier = Modifier.height(12.dp))
 
-                            Spacer(modifier = Modifier.height(12.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.End
-                            ) {
-                                Button(
-                                    onClick = {
-                                        navController.navigate("map/${plan.lat}/${plan.lng}")
-                                    },
-                                    shape = RoundedCornerShape(8.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color.Black,
-                                        contentColor = Color.White
-                                    )
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.End
                                 ) {
-                                    Text("View Location")
+                                    Button(
+                                        onClick = {
+                                            navController.navigate("map/${plan.lat}/${plan.lng}")
+                                        },
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color.Black,
+                                            contentColor = Color.White
+                                        )
+                                    ) {
+                                        Text("View Location")
+                                    }
                                 }
                             }
                         }
