@@ -235,7 +235,10 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Button(
                     onClick = {
-                        launcher.launch(googleSignInClient.signInIntent)
+                        // 清除已登录的 Google 会话，确保每次点击都会重新选择账号
+                        googleSignInClient.signOut().addOnCompleteListener {
+                            launcher.launch(googleSignInClient.signInIntent)
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
@@ -247,6 +250,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     Spacer(Modifier.width(8.dp))
                     Text("Sign in with Google")
                 }
+
 
                 Spacer(modifier = Modifier.height(12.dp))
 
