@@ -38,8 +38,11 @@ import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
 import com.mapbox.maps.viewannotation.annotationAnchor
 import com.mapbox.maps.viewannotation.geometry
 import com.mapbox.maps.viewannotation.viewAnnotationOptions
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.random.Random
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +52,6 @@ fun FormScreen(
     userName: String,
     planViewModel: PlanViewModel = viewModel()
 ) {
-    val planCount by planViewModel.getCount().collectAsState(initial = 0)
     val context = LocalContext.current
 
     var showMap by remember { mutableStateOf(true) }
@@ -217,7 +219,6 @@ fun FormScreen(
                         }
                     }
                 }
-
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -262,7 +263,6 @@ private fun timeToString(time: LocalTime): String {
 }
 
 private fun submitPlan(
-    id: Int,
     username: String,
     activity: String,
     time: String,
@@ -271,6 +271,16 @@ private fun submitPlan(
     latitude: Double,
     planViewModel: PlanViewModel
 ) {
+    var id = 0
+    var exists = true
+    while (exists) {
+        id = Random.nextInt(0, Int.MAX_VALUE)
+        planViewModel.checkPlan(id) { found ->
+            exists = found
+        }
+    }
+
+
     val plan = Plan(
         id = id,
         name = username,

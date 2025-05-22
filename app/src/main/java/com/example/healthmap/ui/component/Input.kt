@@ -175,7 +175,7 @@ private fun DateInput(
     }
     var displayValue by remember { mutableStateOf("") }
 
-    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
+    Box(modifier = modifier, contentAlignment = Alignment.BottomStart) {
         TextInput(displayValue, label, InputType.DATE, disabled, false, toDate(selectedDate), Icons.Outlined.DateRange, modifier.align(Alignment.Center)) {
             displayValue = it
         }
@@ -206,7 +206,7 @@ private fun TimeInput(
     }
     var displayValue by remember { mutableStateOf("") }
 
-    Box(modifier = modifier, contentAlignment = Alignment.CenterStart) {
+    Box(modifier = modifier, contentAlignment = Alignment.BottomStart) {
         TextInput(displayValue, label, InputType.TIME, disabled, false, toTime(selectedTime), ImageVector.vectorResource(id = R.drawable.ic_outline_schedule), modifier.align(Alignment.Center)) {
             displayValue = it
         }

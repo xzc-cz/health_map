@@ -253,6 +253,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     Text("Sign in with Google")
                 }
 
+
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row {
