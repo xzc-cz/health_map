@@ -14,6 +14,7 @@ import com.example.healthmap.ui.screen.ProfileScreen
 import com.example.healthmap.ui.screen.RegisterScreen
 import com.example.healthmap.ui.screen.ResetScreen
 import com.example.healthmap.ui.screen.AboutAppScreen
+import com.example.healthmap.ui.screen.EditProfileScreen
 
 @Composable
 fun AppNavGraph(navController: NavHostController) {
@@ -61,6 +62,9 @@ fun AppNavGraph(navController: NavHostController) {
         }
         composable("about") {
             AboutAppScreen(navController = navController)
+        }
+        composable("edit_profile") {
+            EditProfileScreen(navController)
         }
     }
 }
