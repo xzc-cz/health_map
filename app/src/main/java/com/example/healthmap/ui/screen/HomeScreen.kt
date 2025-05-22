@@ -2,7 +2,6 @@ package com.example.healthmap.ui.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,13 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.healthmap.R
@@ -26,6 +22,11 @@ import com.example.healthmap.ui.component.AppTopBar
 import com.example.healthmap.viewmodel.PlanViewModel
 import com.example.healthmap.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +40,7 @@ fun HomeScreen(
     val userName = user?.firstName ?: "User"
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val plans by planViewModel.allPlans.collectAsState(initial = emptyList())
 
     LaunchedEffect(Unit) {
         userViewModel.loadCurrentUserFromFirebase()
@@ -53,7 +55,7 @@ fun HomeScreen(
         Scaffold(
             topBar = {
                 AppTopBar(
-                    title = "Health Map",
+                    title = "Health-Map",
                     isHomeScreen = true,
                     onNavigationClick = { scope.launch { drawerState.open() } }
                 )
@@ -77,14 +79,14 @@ fun HomeScreen(
 
                 item {
                     Image(
-                        painter = painterResource(id = R.drawable.banner),
+                        painter = painterResource(id = R.drawable.home1),
                         contentDescription = "Banner Image",
                         contentScale = ContentScale.Crop,
                         alignment = Alignment.TopCenter,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 10.dp)
-                            .height(500.dp)
+                            .height(600.dp)
                     )
                 }
 
@@ -93,22 +95,6 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
-                            text = "Inspirational Sports Quotes",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Some words could make people feel wanna do some sport like cheer you up",
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                                .wrapContentWidth(Alignment.CenterHorizontally)
-                                .widthIn(max = 280.dp),
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -149,22 +135,26 @@ fun HomeScreen(
                     )
                 }
 
-                items(2) { i ->
-                    val activity = if (i == 0) "Activity1" else "Activity2"
-                    val time = if (i == 0) "9th April 13:00PM" else "11th April 13:00PM"
-
+                items(plans) { plan ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 10.dp, vertical = 6.dp)
                             .border(1.dp, color = Color.DarkGray)
-                            .background(Color.White, shape = RectangleShape)
+                            .background(Color.White, shape = RoundedCornerShape(0.dp))
                             .padding(16.dp)
                     ) {
                         Column {
-                            Text(text = activity, style = MaterialTheme.typography.titleMedium)
                             Text(
-                                text = "Location: xxxx | $time",
+                                text = plan.name,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = plan.activity,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "${plan.date}  ${plan.time}",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -173,10 +163,10 @@ fun HomeScreen(
 
                         Button(
                             onClick = {
-                                navController.navigate("map")
+                                navController.navigate("map/${plan.lat}/${plan.lng}")
                             },
-                            shape = RectangleShape,
-                            colors = ButtonDefaults.buttonColors(
+                            shape = RoundedCornerShape(0.dp),
+                                    colors = ButtonDefaults.buttonColors(
                                 containerColor = Color.Black,
                                 contentColor = Color.White
                             ),

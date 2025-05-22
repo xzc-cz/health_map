@@ -36,8 +36,16 @@ fun AppNavGraph(navController: NavHostController) {
             val userName = backStackEntry.arguments?.getString("userName") ?: ""
             FormScreen(navController = navController, userName = userName)
         }
-        composable("map") {
-            MapScreen(navController)
+        composable(
+            route = "map/{lat}/{lng}",
+            arguments = listOf(
+                navArgument("lat") { type = NavType.FloatType },
+                navArgument("lng") { type = NavType.FloatType }
+            )
+        ) { backStackEntry ->
+            val lat = backStackEntry.arguments?.getFloat("lat")?.toDouble() ?: 0.0
+            val lng = backStackEntry.arguments?.getFloat("lng")?.toDouble() ?: 0.0
+            MapScreen(navController = navController, lat = lat, lng = lng)
         }
         composable("login") {
             LoginScreen(navController)

@@ -40,7 +40,12 @@ import com.example.healthmap.ui.component.AppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapScreen(navController: NavController, planViewModel: PlanViewModel = viewModel()) {
+fun MapScreen(
+    navController: NavController,
+    lat: Double,
+    lng: Double,
+    planViewModel: PlanViewModel = viewModel()
+) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     val plans by planViewModel.getPlansForDate(selectedDate).collectAsState(initial = emptyList())
     val context = LocalContext.current
@@ -90,7 +95,7 @@ fun MapScreen(navController: NavController, planViewModel: PlanViewModel = viewM
                     mapViewportState = rememberMapViewportState {
                         setCameraOptions {
                             zoom(14.0)
-                            center(Point.fromLngLat(145.130, -37.917))
+                            center(Point.fromLngLat(lng, lat))
                         }
                     }
                 ) {

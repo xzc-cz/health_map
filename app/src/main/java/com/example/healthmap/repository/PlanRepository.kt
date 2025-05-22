@@ -40,7 +40,7 @@ abstract class PlanDatabase : RoomDatabase() {
                     PlanDatabase::class.java,
                     "plan_database"
                 )
-                    .fallbackToDestructiveMigration(false)
+                    .fallbackToDestructiveMigration(true)
                     .build()
                 INSTANCE = instance
                 instance
