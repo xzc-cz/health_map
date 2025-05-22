@@ -33,8 +33,11 @@ import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
 import com.mapbox.maps.viewannotation.annotationAnchor
 import com.mapbox.maps.viewannotation.geometry
 import com.mapbox.maps.viewannotation.viewAnnotationOptions
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.LocalTime
+import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +46,6 @@ fun FormScreen(
     userName: String,
     planViewModel: PlanViewModel = viewModel()
 ) {
-    val planCount by planViewModel.getCount().collectAsState(initial = 0)
     val context = LocalContext.current
 
     var showMap by remember { mutableStateOf(true) }
@@ -128,7 +130,8 @@ fun FormScreen(
                                         .build()
                                 )
                             } else {
-                                Toast.makeText(context, "Invalid coordinates", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Invalid coordinates", Toast.LENGTH_SHORT)
+                                    .show()
                             }
                         }
                     }
@@ -150,7 +153,8 @@ fun FormScreen(
                                         .build()
                                 )
                             } else {
-                                Toast.makeText(context, "Invalid coordinates", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Invalid coordinates", Toast.LENGTH_SHORT)
+                                    .show()
                             }
                         }
                     }
@@ -166,7 +170,9 @@ fun FormScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         MapboxMap(
-                            modifier = Modifier.fillMaxWidth().height(240.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(240.dp),
                             mapViewportState = mapViewportState
                         ) {
                             ViewAnnotation(
@@ -196,12 +202,12 @@ fun FormScreen(
                     .background(Color.Black)
                     .clickable {
                         if (latitude !in -90.0..90.0 || longitude !in -180.0..180.0) {
-                            Toast.makeText(context, "Coordinates out of range", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Coordinates out of range", Toast.LENGTH_SHORT)
+                                .show()
                             return@clickable
                         }
 
                         submitPlan(
-                            planCount,
                             userName,
                             activityName,
                             timeToString(selectedTime),
@@ -231,7 +237,6 @@ private fun timeToString(time: LocalTime): String {
 }
 
 private fun submitPlan(
-    id: Int,
     username: String,
     activity: String,
     time: String,
@@ -240,6 +245,16 @@ private fun submitPlan(
     latitude: Double,
     planViewModel: PlanViewModel
 ) {
+    var id = 0
+    var exists = true
+    while (exists) {
+        id = Random.nextInt(0, Int.MAX_VALUE)
+        planViewModel.checkPlan(id) { found ->
+            exists = found
+        }
+    }
+
+
     val plan = Plan(
         id = id,
         name = username,

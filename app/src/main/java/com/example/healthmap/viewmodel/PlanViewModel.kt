@@ -10,6 +10,7 @@ import com.example.healthmap.repository.PlanRepository
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
@@ -81,6 +82,13 @@ class PlanViewModel(application: Application) : AndroidViewModel(application) {
             doc2Plan(dto)
         }
         cRepository.insertManyPlans(plans)
+    }
+
+    fun checkPlan(id: Int, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val exists = cRepository.hasPlan(id)
+            onResult(exists)
+        }
     }
 }
 

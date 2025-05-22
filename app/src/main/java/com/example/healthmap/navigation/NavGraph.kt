@@ -20,7 +20,7 @@ import com.example.healthmap.ui.screen.EditProfileScreen
 fun AppNavGraph(navController: NavHostController) {
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "home"
     ) {
         composable("home") {
             HomeScreen(navController = navController)
