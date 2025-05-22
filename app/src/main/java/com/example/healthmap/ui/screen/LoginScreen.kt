@@ -33,6 +33,9 @@ import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.collectLatest
 import com.example.healthmap.ui.component.AppTopBar
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -154,7 +157,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                         .padding(bottom = 30.dp)
                 )
                 Text(
-                    text = "T0",
+                    text = "TO",
                     style = MaterialTheme.typography.headlineLarge,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -235,7 +238,6 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Button(
                     onClick = {
-                        // 清除已登录的 Google 会话，确保每次点击都会重新选择账号
                         googleSignInClient.signOut().addOnCompleteListener {
                             launcher.launch(googleSignInClient.signInIntent)
                         }
@@ -254,14 +256,40 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                TextButton(onClick = {
-                    navController.navigate("reset")
-                }) {
-                    Text("Forgot Password?", color = Color.White)
+                Row {
+                    Text(
+                        text = "Forgot Password? ",
+                        color = Color.White,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = "Reset",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable {
+                            navController.navigate("reset")
+                        }
+                    )
                 }
 
-                TextButton(onClick = { navController.navigate("register") }) {
-                    Text("Don't have an account? Register", color = Color.White)
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row {
+                    Text(
+                        text = "Don't have an account? ",
+                        color = Color.White,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = "Register",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable {
+                            navController.navigate("register")
+                        }
+                    )
                 }
             }
         }
