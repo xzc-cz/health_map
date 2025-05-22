@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.healthmap.ui.component.AppTopBar
@@ -16,12 +15,16 @@ import com.example.healthmap.viewmodel.UserViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen( navController: NavController) {
     val userViewModel: UserViewModel = viewModel()
     val user = userViewModel.currentUser.collectAsState().value
+    val fullName = "${user?.firstName ?: "First"} ${user?.lastName ?: "Last"}"
+    val gender = "Gender: ${user?.gender ?: "-"}"
+    val email = user?.email ?: "example@domain.com"
 
     LaunchedEffect(Unit) {
         userViewModel.loadCurrentUserFromFirebase()
@@ -39,22 +42,21 @@ fun ProfileScreen( navController: NavController) {
         Column(modifier = Modifier.padding(16.dp).padding(innerPadding)) {
             ProfileCard(
                 title = "Personal Information",
-                content = listOf(
-                    "${user?.firstName ?: "First"} ${user?.lastName ?: "Last"}",
-                    "Gender: ${user?.gender ?: "-"}"
-                )
+                content = listOf(fullName, gender),
+                navController = navController
             )
 
             ProfileCard(
                 title = "Email Address",
-                content = listOf(user?.email ?: "example@domain.com")
+                content = listOf(email),
+                navController = navController
             )
         }
     }
 }
 
 @Composable
-fun ProfileCard(title: String, content: List<String>) {
+fun ProfileCard(title: String, content: List<String>, navController: NavController) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -81,11 +83,13 @@ fun ProfileCard(title: String, content: List<String>) {
             ) {
                 Text(
                     text = "Edit",
+                    modifier = Modifier
+                        .clickable {
+                            navController.navigate("edit_profile")
+                        }
+                        .padding(top = 8.dp),
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { },
-                    style = MaterialTheme.typography.bodyLarge.copy(
-                        textDecoration = TextDecoration.Underline
-                    )
+                    fontWeight = FontWeight.Bold
                 )
             }
         }

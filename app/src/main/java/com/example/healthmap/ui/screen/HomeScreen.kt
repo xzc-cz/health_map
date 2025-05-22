@@ -23,10 +23,10 @@ import com.example.healthmap.viewmodel.PlanViewModel
 import com.example.healthmap.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.shadow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,14 +59,15 @@ fun HomeScreen(
                     isHomeScreen = true,
                     onNavigationClick = { scope.launch { drawerState.open() } }
                 )
-            }
+            },
+            containerColor = Color(0xFFF2F2F2)
         ) { innerPadding ->
             LazyColumn(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
                     .padding(horizontal = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 item {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -80,7 +81,7 @@ fun HomeScreen(
                 item {
                     Image(
                         painter = painterResource(id = R.drawable.home1),
-                        contentDescription = "Banner Image",
+                        contentDescription = "Home Image",
                         contentScale = ContentScale.Crop,
                         alignment = Alignment.TopCenter,
                         modifier = Modifier
@@ -109,7 +110,8 @@ fun HomeScreen(
                             Text(
                                 text = "Create New Schedule",
                                 color = Color.White,
-                                style = MaterialTheme.typography.bodyLarge
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }
@@ -140,39 +142,47 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 10.dp, vertical = 6.dp)
-                            .border(1.dp, color = Color.DarkGray)
-                            .background(Color.White, shape = RoundedCornerShape(0.dp))
+                            .shadow(4.dp, RoundedCornerShape(12.dp))
+                            .background(Color.White, shape = RoundedCornerShape(12.dp))
                             .padding(16.dp)
                     ) {
-                        Column {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+
                             Text(
                                 text = plan.name,
-                                style = MaterialTheme.typography.titleMedium
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                             )
+
                             Text(
                                 text = plan.activity,
                                 style = MaterialTheme.typography.bodyMedium
                             )
+
                             Text(
                                 text = "${plan.date}  ${plan.time}",
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            Spacer(modifier = Modifier.height(40.dp))
-                        }
 
-                        Button(
-                            onClick = {
-                                navController.navigate("map/${plan.lat}/${plan.lng}")
-                            },
-                            shape = RoundedCornerShape(0.dp),
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
+                            ) {
+                                Button(
+                                    onClick = {
+                                        navController.navigate("map/${plan.lat}/${plan.lng}")
+                                    },
+                                    shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Black,
-                                contentColor = Color.White
-                            ),
-                            modifier = Modifier.align(Alignment.BottomEnd)
-                        ) {
-                            Text("View Location")
+                                        containerColor = Color.Black,
+                                        contentColor = Color.White
+                                    )
+                                ) {
+                                    Text("View Location")
+                                }
+                            }
                         }
                     }
                 }

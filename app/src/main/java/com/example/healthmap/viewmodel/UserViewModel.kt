@@ -109,4 +109,26 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
             Log.e("Profile", "Failed to load user: ${e.message}")
         }
     }
+    fun updateProfile(firstName: String, lastName: String) = viewModelScope.launch {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+
+        try {
+            FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .update(
+                    mapOf(
+                        "firstName" to firstName,
+                        "lastName" to lastName
+                    )
+                )
+                .await()
+
+            // 重新加载最新数据
+            loadCurrentUserFromFirebase()
+
+        } catch (e: Exception) {
+            Log.e("EditProfile", "Update failed", e)
+        }
+    }
 }
