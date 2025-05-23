@@ -48,14 +48,16 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
     val loginSuccess = userViewModel.loginSuccess.collectAsState(initial = false).value
     val currentUser = userViewModel.currentUser.collectAsState().value
 
+    // Set up Google Sign-In client with token and email
     val googleSignInClient = remember {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("310736295843-6vaergprnketq35bg6nf715jkvau83pl.apps.googleusercontent.com") // 🔁 替换成你 Firebase 上的 Web client ID
+            .requestIdToken("310736295843-6vaergprnketq35bg6nf715jkvau83pl.apps.googleusercontent.com")
             .requestEmail()
             .build()
         GoogleSignIn.getClient(context, gso)
     }
 
+    // Launcher to handle Google Sign-In result
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -76,12 +78,14 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
         }
     }
 
+    // Trigger load of current user info after login
     LaunchedEffect(loginSuccess) {
         if (loginSuccess) {
             userViewModel.loadCurrentUserFromFirebase()
         }
     }
 
+    // Navigate to home if user already logged in
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
             navController.navigate("home") {
@@ -90,26 +94,13 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
         }
     }
 
+    // Collect and show login errors from ViewModel
     LaunchedEffect(Unit) {
         userViewModel.loginError.collectLatest { message ->
             loginError.value = message
         }
     }
 
-
-    LaunchedEffect(loginSuccess) {
-        if (loginSuccess) {
-            userViewModel.loadCurrentUserFromFirebase()
-        }
-    }
-
-    LaunchedEffect(currentUser) {
-        if (currentUser != null) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
-            }
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -127,6 +118,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                 .padding(padding)
         ) {
 
+            // Background image and overlay
             Image(
                 painter = painterResource(id = R.drawable.welcome),
                 contentDescription = "Background",
@@ -147,6 +139,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Welcome text headers
                 Text(
                     text = "WELCOME!",
                     style = MaterialTheme.typography.headlineLarge,
@@ -175,6 +168,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                         .padding(bottom = 170.dp)
                 )
 
+                // Email input field
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -192,6 +186,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Password input field
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -208,6 +203,13 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     )
                 )
 
+                // Show blank input error message
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
+
+                // Show Firebase login error
                 loginError.value?.let {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = it, color = MaterialTheme.colorScheme.error)
@@ -215,6 +217,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Email/Password login button
                 Button(
                     onClick = {
                         if (email.isBlank() || password.isBlank()) {
@@ -236,6 +239,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Google Sign-In button
                 Button(
                     onClick = {
                         googleSignInClient.signOut().addOnCompleteListener {
@@ -253,7 +257,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     Text("Sign in with Google")
                 }
 
-
+                // Navigation to reset screen
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Row {
@@ -275,6 +279,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Navigation to register screen
                 Row {
                     Text(
                         text = "Don't have an account? ",
@@ -309,6 +314,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
     var expanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Listen for register result from the ViewModel and handle UI feedback
     LaunchedEffect(Unit) {
         userViewModel.registerResult.collectLatest { result ->
             when (result) {
@@ -332,6 +338,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
         }
     }
 
+    // Background image container
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.login_background),
@@ -340,6 +347,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
             modifier = Modifier.fillMaxSize()
         )
 
+        // Register form inside Scaffold with transparent background
         Scaffold(
             topBar = {
                 AppTopBar(
@@ -364,6 +372,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
                     modifier = Modifier.padding(bottom = 44.dp)
                 )
 
+                // Input fields for user credentials and personal information
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -401,6 +410,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Gender dropdown menu
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = !expanded }
@@ -432,6 +442,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
                     }
                 }
 
+                // Error message
                 errorMessage?.let {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = it, color = MaterialTheme.colorScheme.error)
@@ -439,6 +450,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
 
                 Spacer(modifier = Modifier.height(20.dp))
 
+                // Register button
                 Button(
                     onClick = {
                         if (email.isBlank() || password.isBlank() || firstName.isBlank() || lastName.isBlank()) {
@@ -465,6 +477,8 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
+
+                // Navigation to login
                 TextButton(onClick = { navController.navigate("login") }) {
                     Text("Already have an account? Login", color = Color.Black)
                 }
