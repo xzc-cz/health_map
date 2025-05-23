@@ -109,7 +109,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
             Log.e("Profile", "Failed to load user: ${e.message}")
         }
     }
-    fun updateProfile(firstName: String, lastName: String) = viewModelScope.launch {
+    fun updateProfile(firstName: String, lastName: String, gender: String) = viewModelScope.launch {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
 
         try {
@@ -119,7 +119,8 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
                 .update(
                     mapOf(
                         "firstName" to firstName,
-                        "lastName" to lastName
+                        "lastName" to lastName,
+                        "gender" to gender
                     )
                 )
                 .await()

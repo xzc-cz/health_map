@@ -154,44 +154,57 @@ fun HomeScreen(
                                 .fillMaxWidth()
                                 .padding(horizontal = 10.dp, vertical = 6.dp)
                                 .shadow(4.dp, RoundedCornerShape(12.dp))
-                                .background(Color.White, shape = RoundedCornerShape(12.dp))
-                                .padding(16.dp)
                         ) {
-                            Column(modifier = Modifier.fillMaxWidth()) {
+                            Image(
+                                painter = painterResource(id = R.drawable.card),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .matchParentSize()
+                            )
 
-                                Text(
-                                    text = plan.name,
-                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                                )
+                            Box(
+                                modifier = Modifier
+                                    .background(Color.White.copy(alpha = 0.2f), shape = RoundedCornerShape(12.dp))
+                                    .padding(16.dp)
+                            ) {
+                                Column(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        text = plan.name,
+                                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                    )
 
-                                Text(
-                                    text = plan.activity,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
+                                    Spacer(modifier = Modifier.height(8.dp))
 
-                                Text(
-                                    text = "${plan.date}  ${plan.time}",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                    Text(
+                                        text = plan.activity,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
 
-                                Spacer(modifier = Modifier.height(12.dp))
+                                    Text(
+                                        text = "${plan.date}  ${plan.time}",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
 
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    Button(
-                                        onClick = {
-                                            navController.navigate("map/${plan.lat}/${plan.lng}")
-                                        },
-                                        shape = RoundedCornerShape(8.dp),
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color.Black,
-                                            contentColor = Color.White
-                                        )
+                                    Spacer(modifier = Modifier.height(12.dp))
+
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.End
                                     ) {
-                                        Text("View Location")
+                                        Button(
+                                            onClick = {
+                                                navController.navigate("map/${plan.lat}/${plan.lng}")
+                                            },
+                                            shape = RoundedCornerShape(12.dp),
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = Color.Black,
+                                                contentColor = Color.White
+                                            )
+                                        ) {
+                                            Text("View Location", fontWeight = FontWeight.Bold)
+                                        }
                                     }
                                 }
                             }

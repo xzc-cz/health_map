@@ -18,7 +18,7 @@ fun AboutAppScreen(navController: NavController) {
     Box(modifier = Modifier.fillMaxSize()) {
 
         Image(
-            painter = painterResource(id = R.drawable.home_background), // ⬅️ 替换成你自己的图片
+            painter = painterResource(id = R.drawable.about_background), // ⬅️ 替换成你自己的图片
             contentDescription = "Background Image",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()

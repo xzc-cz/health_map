@@ -327,138 +327,147 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
                     errorMessage = "Failed to register new account"
                     userViewModel.resetRegisterResult()
                 }
-                null -> {
-                }
+                null -> {}
             }
         }
     }
 
-    Scaffold(
-        topBar = {
-            AppTopBar(
-                title = "Register",
-                isHomeScreen = false,
-                onNavigationClick = { navController.popBackStack() }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Create Your Account",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 44.dp)
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.login_background),
+            contentDescription = "Register Background",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = firstName,
-                onValueChange = { firstName = it },
-                label = { Text("First Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = lastName,
-                onValueChange = { lastName = it },
-                label = { Text("Last Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
+        Scaffold(
+            topBar = {
+                AppTopBar(
+                    title = "Register",
+                    isHomeScreen = false,
+                    onNavigationClick = { navController.popBackStack() }
+                )
+            },
+            containerColor = Color.Transparent
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedTextField(
-                    value = gender,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Gender") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor()
+                Text(
+                    text = "Create Your Account",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 44.dp)
                 )
 
-                ExposedDropdownMenu(
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = firstName,
+                    onValueChange = { firstName = it },
+                    label = { Text("First Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = { lastName = it },
+                    label = { Text("Last Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                ExposedDropdownMenuBox(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onExpandedChange = { expanded = !expanded }
                 ) {
-                    genderOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = {
-                                gender = option
-                                expanded = false
-                            }
-                        )
+                    OutlinedTextField(
+                        value = gender,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Gender") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        genderOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    gender = option
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
-            }
 
-            errorMessage?.let {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = it, color = MaterialTheme.colorScheme.error)
-            }
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
 
-            Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            Button(
-                onClick = {
-                    if (email.isBlank() || password.isBlank() || firstName.isBlank() || lastName.isBlank()) {
-                        errorMessage = "All fields are required"
-                    } else {
-                        errorMessage = null
-                        userViewModel.register(
-                            email,
-                            password,
-                            firstName,
-                            lastName,
-                            gender
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                ),
-                shape = RectangleShape
-            ) {
-                Text("Register")
-            }
+                Button(
+                    onClick = {
+                        if (email.isBlank() || password.isBlank() || firstName.isBlank() || lastName.isBlank()) {
+                            errorMessage = "All fields are required"
+                        } else {
+                            errorMessage = null
+                            userViewModel.register(
+                                email,
+                                password,
+                                firstName,
+                                lastName,
+                                gender
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    shape = RectangleShape
+                ) {
+                    Text("Register")
+                }
 
-            Spacer(modifier = Modifier.height(12.dp))
-            TextButton(onClick = { navController.navigate("login") }) {
-                Text("Already have an account? Login", color = Color.Black)
+                Spacer(modifier = Modifier.height(12.dp))
+                TextButton(onClick = { navController.navigate("login") }) {
+                    Text("Already have an account? Login", color = Color.Black)
+                }
             }
         }
     }

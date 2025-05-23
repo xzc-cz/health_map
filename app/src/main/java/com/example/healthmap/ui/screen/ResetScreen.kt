@@ -18,6 +18,13 @@ import com.example.healthmap.ui.theme.HealthMapTheme
 import com.example.healthmap.viewmodel.UserViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.Image
+import com.example.healthmap.R
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.text.font.FontWeight
 
 
 //@OptIn(ExperimentalMaterial3Api::class)
@@ -217,80 +224,96 @@ fun ResetScreen(navController: NavController, userViewModel: UserViewModel = vie
         }
     }
 
-    Scaffold(
-        topBar = {
-            AppTopBar(
-                title = "Reset Password",
-                isHomeScreen = false,
-                onNavigationClick = { navController.popBackStack() }
-            )
-        }
-    ){ padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Enter your email to receive a password reset link",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.login_background), // 替换成你项目中的背景图资源名
+            contentDescription = "Reset Background",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
+        Scaffold(
+            topBar = {
+                AppTopBar(
+                    title = "Reset Password",
+                    isHomeScreen = false,
+                    onNavigationClick = { navController.popBackStack() }
+                )
+            },
+            containerColor = Color.Transparent
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Enter your email to receive a password reset link",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(32.dp))
-                Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = {
-                        isLoading = false
-                        message = "Cancelled by user"
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Gray,
-                        contentColor = Color.White
-                    )
-                ) {
-                    Text("Cancel")
-                }
-            } else {
-                Button(
-                    onClick = {
-                        if (email.text.isBlank()) {
-                            message = "Email cannot be empty"
-                        } else {
-                            message = null
-                            isLoading = true
-                            userViewModel.resetPassword(email.text)
-                        }
-                    },
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Reset Password")
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Button(
+                        onClick = {
+                            isLoading = false
+                            message = "Cancelled by user"
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Gray,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Cancel")
+                    }
+                } else {
+                    Button(
+                        onClick = {
+                            if (email.text.isBlank()) {
+                                message = "Email cannot be empty"
+                            } else {
+                                message = null
+                                isLoading = true
+                                userViewModel.resetPassword(email.text)
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Black,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "Reset Password",
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
-            }
 
-            message?.let {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(it, color = MaterialTheme.colorScheme.primary)
-            }
+                message?.let {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(it, color = MaterialTheme.colorScheme.primary)
+                }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            TextButton(onClick = { navController.navigate("login") }) {
-                Text("Back to Login")
+                Spacer(modifier = Modifier.height(24.dp))
             }
         }
     }
