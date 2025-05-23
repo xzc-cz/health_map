@@ -53,6 +53,7 @@ class PlanRepository(application: Application) {
     private var planDao: PlanDAO =
         PlanDatabase.getDatabase(application).planDAO()
     val allPlans: Flow<List<Plan>> = planDao.getAllPlans()
+    suspend fun hasPlan(id: Int): Boolean = planDao.existsById(id)
     fun getPlansForDate(date: LocalDate): Flow<List<Plan>> = planDao.getPlansForDate(date)
 
     fun getCount() = planDao.getCount()

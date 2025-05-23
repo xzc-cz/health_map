@@ -33,6 +33,9 @@ import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.collectLatest
 import com.example.healthmap.ui.component.AppTopBar
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,14 +48,16 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
     val loginSuccess = userViewModel.loginSuccess.collectAsState(initial = false).value
     val currentUser = userViewModel.currentUser.collectAsState().value
 
+    // Set up Google Sign-In client with token and email
     val googleSignInClient = remember {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("310736295843-6vaergprnketq35bg6nf715jkvau83pl.apps.googleusercontent.com") // 🔁 替换成你 Firebase 上的 Web client ID
+            .requestIdToken("310736295843-6vaergprnketq35bg6nf715jkvau83pl.apps.googleusercontent.com")
             .requestEmail()
             .build()
         GoogleSignIn.getClient(context, gso)
     }
 
+    // Launcher to handle Google Sign-In result
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -73,12 +78,14 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
         }
     }
 
+    // Trigger load of current user info after login
     LaunchedEffect(loginSuccess) {
         if (loginSuccess) {
             userViewModel.loadCurrentUserFromFirebase()
         }
     }
 
+    // Navigate to home if user already logged in
     LaunchedEffect(currentUser) {
         if (currentUser != null) {
             navController.navigate("home") {
@@ -87,26 +94,13 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
         }
     }
 
+    // Collect and show login errors from ViewModel
     LaunchedEffect(Unit) {
         userViewModel.loginError.collectLatest { message ->
             loginError.value = message
         }
     }
 
-
-    LaunchedEffect(loginSuccess) {
-        if (loginSuccess) {
-            userViewModel.loadCurrentUserFromFirebase()
-        }
-    }
-
-    LaunchedEffect(currentUser) {
-        if (currentUser != null) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
-            }
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -124,6 +118,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                 .padding(padding)
         ) {
 
+            // Background image and overlay
             Image(
                 painter = painterResource(id = R.drawable.welcome),
                 contentDescription = "Background",
@@ -144,6 +139,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Welcome text headers
                 Text(
                     text = "WELCOME!",
                     style = MaterialTheme.typography.headlineLarge,
@@ -154,7 +150,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                         .padding(bottom = 30.dp)
                 )
                 Text(
-                    text = "T0",
+                    text = "TO",
                     style = MaterialTheme.typography.headlineLarge,
                     color = Color.White,
                     fontWeight = FontWeight.Bold,
@@ -172,6 +168,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                         .padding(bottom = 170.dp)
                 )
 
+                // Email input field
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -189,6 +186,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Password input field
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
@@ -205,6 +203,13 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     )
                 )
 
+                // Show blank input error message
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
+
+                // Show Firebase login error
                 loginError.value?.let {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = it, color = MaterialTheme.colorScheme.error)
@@ -212,6 +217,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Email/Password login button
                 Button(
                     onClick = {
                         if (email.isBlank() || password.isBlank()) {
@@ -233,9 +239,12 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Google Sign-In button
                 Button(
                     onClick = {
-                        launcher.launch(googleSignInClient.signInIntent)
+                        googleSignInClient.signOut().addOnCompleteListener {
+                            launcher.launch(googleSignInClient.signInIntent)
+                        }
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
@@ -248,16 +257,44 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     Text("Sign in with Google")
                 }
 
+                // Navigation to reset screen
                 Spacer(modifier = Modifier.height(12.dp))
 
-                TextButton(onClick = {
-                    navController.navigate("reset")
-                }) {
-                    Text("Forgot Password?", color = Color.White)
+                Row {
+                    Text(
+                        text = "Forgot Password? ",
+                        color = Color.White,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = "Reset",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable {
+                            navController.navigate("reset")
+                        }
+                    )
                 }
 
-                TextButton(onClick = { navController.navigate("register") }) {
-                    Text("Don't have an account? Register", color = Color.White)
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Navigation to register screen
+                Row {
+                    Text(
+                        text = "Don't have an account? ",
+                        color = Color.White,
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = "Register",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        textDecoration = TextDecoration.Underline,
+                        modifier = Modifier.clickable {
+                            navController.navigate("register")
+                        }
+                    )
                 }
             }
         }
@@ -277,6 +314,7 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
     var expanded by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
+    // Listen for register result from the ViewModel and handle UI feedback
     LaunchedEffect(Unit) {
         userViewModel.registerResult.collectLatest { result ->
             when (result) {
@@ -295,138 +333,155 @@ fun RegisterScreen(navController: NavController, userViewModel: UserViewModel = 
                     errorMessage = "Failed to register new account"
                     userViewModel.resetRegisterResult()
                 }
-                null -> {
-                }
+                null -> {}
             }
         }
     }
 
-    Scaffold(
-        topBar = {
-            AppTopBar(
-                title = "Register",
-                isHomeScreen = false,
-                onNavigationClick = { navController.popBackStack() }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Create Your Account",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 44.dp)
-            )
+    // Background image container
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.login_background),
+            contentDescription = "Register Background",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                visualTransformation = PasswordVisualTransformation(),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = firstName,
-                onValueChange = { firstName = it },
-                label = { Text("First Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            OutlinedTextField(
-                value = lastName,
-                onValueChange = { lastName = it },
-                label = { Text("Last Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
+        // Register form inside Scaffold with transparent background
+        Scaffold(
+            topBar = {
+                AppTopBar(
+                    title = "Register",
+                    isHomeScreen = false,
+                    onNavigationClick = { navController.popBackStack() }
+                )
+            },
+            containerColor = Color.Transparent
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                OutlinedTextField(
-                    value = gender,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Gender") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .menuAnchor()
+                Text(
+                    text = "Create Your Account",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 44.dp)
                 )
 
-                ExposedDropdownMenu(
+                // Input fields for user credentials and personal information
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = firstName,
+                    onValueChange = { firstName = it },
+                    label = { Text("First Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = { lastName = it },
+                    label = { Text("Last Name") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Gender dropdown menu
+                ExposedDropdownMenuBox(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onExpandedChange = { expanded = !expanded }
                 ) {
-                    genderOptions.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = {
-                                gender = option
-                                expanded = false
-                            }
-                        )
+                    OutlinedTextField(
+                        value = gender,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Gender") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        genderOptions.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    gender = option
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
-            }
 
-            errorMessage?.let {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(text = it, color = MaterialTheme.colorScheme.error)
-            }
+                // Error message
+                errorMessage?.let {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = it, color = MaterialTheme.colorScheme.error)
+                }
 
-            Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            Button(
-                onClick = {
-                    if (email.isBlank() || password.isBlank() || firstName.isBlank() || lastName.isBlank()) {
-                        errorMessage = "All fields are required"
-                    } else {
-                        errorMessage = null
-                        userViewModel.register(
-                            email,
-                            password,
-                            firstName,
-                            lastName,
-                            gender
-                        )
-                    }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Black,
-                    contentColor = Color.White
-                ),
-                shape = RectangleShape
-            ) {
-                Text("Register")
-            }
+                // Register button
+                Button(
+                    onClick = {
+                        if (email.isBlank() || password.isBlank() || firstName.isBlank() || lastName.isBlank()) {
+                            errorMessage = "All fields are required"
+                        } else {
+                            errorMessage = null
+                            userViewModel.register(
+                                email,
+                                password,
+                                firstName,
+                                lastName,
+                                gender
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Black,
+                        contentColor = Color.White
+                    ),
+                    shape = RectangleShape
+                ) {
+                    Text("Register")
+                }
 
-            Spacer(modifier = Modifier.height(12.dp))
-            TextButton(onClick = { navController.navigate("login") }) {
-                Text("Already have an account? Login", color = Color.Black)
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Navigation to login
+                TextButton(onClick = { navController.navigate("login") }) {
+                    Text("Already have an account? Login", color = Color.Black)
+                }
             }
         }
     }

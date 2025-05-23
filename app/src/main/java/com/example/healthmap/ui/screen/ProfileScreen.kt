@@ -1,25 +1,26 @@
 package com.example.healthmap.ui.screen
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.healthmap.R
 import com.example.healthmap.ui.component.AppTopBar
 import com.example.healthmap.viewmodel.UserViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.shadow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen( navController: NavController) {
+fun ProfileScreen(navController: NavController) {
     val userViewModel: UserViewModel = viewModel()
     val user = userViewModel.currentUser.collectAsState().value
     val fullName = "${user?.firstName ?: "First"} ${user?.lastName ?: "Last"}"
@@ -30,41 +31,63 @@ fun ProfileScreen( navController: NavController) {
         userViewModel.loadCurrentUserFromFirebase()
     }
 
-    Scaffold(
-        topBar = {
-            AppTopBar(
-                title = "Profile",
-                isHomeScreen = false,
-                onNavigationClick = {navController.popBackStack()}
-            )
-        }
-    ){ innerPadding ->
-        Column(modifier = Modifier.padding(16.dp).padding(innerPadding)) {
-            ProfileCard(
-                title = "Personal Information",
-                content = listOf(fullName, gender),
-                navController = navController
-            )
+    // ✅ 背景图不随滚动
+    Box(modifier = Modifier.fillMaxSize()) {
+        Image(
+            painter = painterResource(id = R.drawable.home_background), // 替换成你自己的背景图资源名
+            contentDescription = "Profile Background",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
 
-            ProfileCard(
-                title = "Email Address",
-                content = listOf(email),
-                navController = navController
-            )
+        Scaffold(
+            topBar = {
+                AppTopBar(
+                    title = "Profile",
+                    isHomeScreen = false,
+                    onNavigationClick = { navController.popBackStack() }
+                )
+            },
+            containerColor = Color.Transparent // ✅ 让背景图透出
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(16.dp)
+            ) {
+                ProfileCard(
+                    title = "Personal Information",
+                    content = listOf(fullName, gender),
+                    navController = navController,
+                    editable = true
+                )
+
+                ProfileCard(
+                    title = "Email Address",
+                    content = listOf(email),
+                    navController = navController,
+                    editable = false
+                )
+            }
         }
     }
 }
 
 @Composable
-fun ProfileCard(title: String, content: List<String>, navController: NavController) {
+fun ProfileCard(
+    title: String,
+    content: List<String>,
+    navController: NavController,
+    editable: Boolean
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
-            .height(160.dp),
-        shape = RectangleShape,
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, Color.Gray)
+            .height(160.dp) // ✅ 固定高度让所有卡片一致
+            .shadow(4.dp, shape = MaterialTheme.shapes.medium), // ✅ 阴影
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column(
             modifier = Modifier
@@ -72,25 +95,34 @@ fun ProfileCard(title: String, content: List<String>, navController: NavControll
                 .padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Column {
-                Text(title, style = MaterialTheme.typography.titleMedium)
-                content.forEach { Text(it) }
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                content.forEach {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
-            ) {
-                Text(
-                    text = "Edit",
-                    modifier = Modifier
-                        .clickable {
-                            navController.navigate("edit_profile")
-                        }
-                        .padding(top = 8.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
+            if (editable) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    Text(
+                        text = "Edit",
+                        modifier = Modifier
+                            .clickable { navController.navigate("edit_profile") }
+                            .padding(top = 8.dp),
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

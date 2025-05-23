@@ -40,6 +40,9 @@ interface PlanDAO {
     @Query("SELECT * FROM `Plan`")
     fun getAllPlans(): Flow<List<Plan>>
 
+    @Query("SELECT EXISTS(SELECT 1 FROM `Plan` WHERE id = :id)")
+    suspend fun existsById(id: Int): Boolean
+
     @Query("SELECT * FROM `Plan` WHERE date = :date")
     fun getPlansForDate(date: LocalDate): Flow<List<Plan>>
 
