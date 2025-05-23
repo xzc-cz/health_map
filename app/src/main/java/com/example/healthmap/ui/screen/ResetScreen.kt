@@ -26,190 +26,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.font.FontWeight
 
-
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun ResetScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
-//    val context = LocalContext.current
-//    var email by remember { mutableStateOf(TextFieldValue("")) }
-//    var newPassword by remember { mutableStateOf(TextFieldValue("")) }
-//    var message by remember { mutableStateOf<String?>(null) }
-//
-//    LaunchedEffect(Unit) {
-//        userViewModel.resetResult.collect { success ->
-//            if (success) {
-//                Toast.makeText(context, "Password reset successful", Toast.LENGTH_SHORT).show()
-//                navController.navigate("login") {
-//                    popUpTo("reset") { inclusive = true }
-//                }
-//            } else {
-//                message = "Account does not exist"
-//            }
-//        }
-//    }
-//
-//    Scaffold(
-//        topBar = {
-//            CenterAlignedTopAppBar(
-//                title = {
-//                    Text("Reset Password")
-//                }
-//            )
-//        }
-//    ) { padding ->
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(padding)
-//                .padding(24.dp),
-//            verticalArrangement = Arrangement.Center,
-//            horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-//
-//            Text(
-//                text = "Enter your email to receive a password reset link",
-//                style = MaterialTheme.typography.bodyMedium,
-//                modifier = Modifier.padding(bottom = 16.dp)
-//            )
-//
-//            OutlinedTextField(
-//                value = email,
-//                onValueChange = { email = it },
-//                label = { Text("Email") },
-//                singleLine = true,
-//                modifier = Modifier.fillMaxWidth()
-//            )
-//            OutlinedTextField(
-//                value = newPassword,
-//                onValueChange = { newPassword = it },
-//                label = { Text("New Password") },
-//                singleLine = true,
-//                modifier = Modifier.fillMaxWidth()
-//            )
-//
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            Button(
-//                onClick = {
-//                    when {
-//                        email.text.isBlank() -> {
-//                            message = "Email cannot be empty"
-//                        }
-//                        newPassword.text.isBlank() -> {
-//                            message = "New password cannot be empty"
-//                        }
-//                        newPassword.text.length < 6 -> {
-//                            message = "Password must be at least 6 characters"
-//                        }
-//                        else -> {
-//                            message = null
-//                            userViewModel.resetPassword(email.text, newPassword.text)
-//                        }
-//                    }
-//                },
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Text("Reset")
-//            }
-//
-//            message?.let {
-//                Spacer(modifier = Modifier.height(12.dp))
-//                Text(it, color = MaterialTheme.colorScheme.primary)
-//            }
-//
-//            Spacer(modifier = Modifier.height(24.dp))
-//
-//            TextButton(onClick = { navController.navigate("login") }) {
-//                Text("Back to Login")
-//            }
-//        }
-//    }
-//}
-
-
-//fun ResetScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
-//    val context = LocalContext.current
-//    var email by remember { mutableStateOf(TextFieldValue("")) }
-//    var message by remember { mutableStateOf<String?>(null) }
-//
-//    LaunchedEffect(Unit) {
-//        userViewModel.resetResult.collect { success ->
-//            if (success) {
-//                Toast.makeText(context, "Reset email sent! Check your inbox.", Toast.LENGTH_SHORT).show()
-//                navController.navigate("login") {
-//                    popUpTo("reset") { inclusive = true }
-//                }
-//            } else {
-//                message = "Account does not exist"
-//            }
-//        }
-//    }
-//
-//    Scaffold(
-//        topBar = {
-//            CenterAlignedTopAppBar(title = { Text("Reset Password") })
-//        }
-//    ) { padding ->
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(padding)
-//                .padding(24.dp),
-//            verticalArrangement = Arrangement.Center,
-//            horizontalAlignment = Alignment.CenterHorizontally
-//        ) {
-//            Text(
-//                text = "Enter your email to receive a password reset link",
-//                style = MaterialTheme.typography.bodyMedium,
-//                modifier = Modifier.padding(bottom = 16.dp)
-//            )
-//
-//            OutlinedTextField(
-//                value = email,
-//                onValueChange = { email = it },
-//                label = { Text("Email") },
-//                singleLine = true,
-//                modifier = Modifier.fillMaxWidth()
-//            )
-//
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            Button(
-//                onClick = {
-//                    if (email.text.isBlank()) {
-//                        message = "Email cannot be empty"
-//                    } else {
-//                        message = null
-//                        userViewModel.resetPassword(email.text)
-//                    }
-//                },
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                Text("Reset Password")
-//            }
-//
-//            message?.let {
-//                Spacer(modifier = Modifier.height(12.dp))
-//                Text(it, color = MaterialTheme.colorScheme.primary)
-//            }
-//
-//            Spacer(modifier = Modifier.height(24.dp))
-//
-//            TextButton(onClick = { navController.navigate("login") }) {
-//                Text("Back to Login")
-//            }
-//        }
-//    }
-//}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ResetScreen(navController: NavController, userViewModel: UserViewModel = viewModel()) {
     val context = LocalContext.current
-    var email by remember { mutableStateOf(TextFieldValue("")) }
-    var message by remember { mutableStateOf<String?>(null) }
-    var isLoading by remember { mutableStateOf(false) }
+    var email by remember { mutableStateOf(TextFieldValue("")) } // Input field for user's email
+    var message by remember { mutableStateOf<String?>(null) } // Message to display feedback
+    var isLoading by remember { mutableStateOf(false) } // Tracks whether loading is in progress
 
+    // Collect reset result from ViewModel to show success/failure and navigate accordingly
     LaunchedEffect(Unit) {
         userViewModel.resetResult.collect { success ->
             isLoading = false
@@ -225,13 +50,15 @@ fun ResetScreen(navController: NavController, userViewModel: UserViewModel = vie
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // Background image for aesthetics
         Image(
-            painter = painterResource(id = R.drawable.login_background), // 替换成你项目中的背景图资源名
+            painter = painterResource(id = R.drawable.login_background),
             contentDescription = "Reset Background",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
 
+        // Main scaffold layout with transparent background
         Scaffold(
             topBar = {
                 AppTopBar(
@@ -250,12 +77,14 @@ fun ResetScreen(navController: NavController, userViewModel: UserViewModel = vie
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Instruction text
                 Text(
                     text = "Enter your email to receive a password reset link",
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
+                // Email input field
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -266,6 +95,7 @@ fun ResetScreen(navController: NavController, userViewModel: UserViewModel = vie
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Loading state with cancel button
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(32.dp))
                     Spacer(modifier = Modifier.height(12.dp))
@@ -282,6 +112,7 @@ fun ResetScreen(navController: NavController, userViewModel: UserViewModel = vie
                         Text("Cancel")
                     }
                 } else {
+                    // Reset button (enabled when not loading)
                     Button(
                         onClick = {
                             if (email.text.isBlank()) {
@@ -308,6 +139,7 @@ fun ResetScreen(navController: NavController, userViewModel: UserViewModel = vie
                     }
                 }
 
+                // Message feedback text (e.g., errors or cancel messages)
                 message?.let {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(it, color = MaterialTheme.colorScheme.primary)

@@ -15,23 +15,30 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 class UserViewModel(application: Application) : AndroidViewModel(application) {
+    // Firebase Firestore instance
     private val firestore = FirebaseFirestore.getInstance()
 
+    // SharedFlow for login success state
     private val _loginSuccess = MutableSharedFlow<Boolean>()
     val loginSuccess: SharedFlow<Boolean> = _loginSuccess
 
+    // StateFlow for registration result: SUCCESS, EXISTS, FAIL
     private val _registerResult = MutableStateFlow<String?>(null)
     val registerResult: StateFlow<String?> = _registerResult
 
+    // SharedFlow to emit password reset result
     private val _resetResult = MutableSharedFlow<Boolean>()
     val resetResult: SharedFlow<Boolean> = _resetResult
 
+    // StateFlow to hold current logged-in user data
     private val _currentUser = MutableStateFlow<UserDto?>(null)
     val currentUser: StateFlow<UserDto?> = _currentUser
 
+    // SharedFlow for login error messages
     private val _loginError = MutableSharedFlow<String?>()
     val loginError: SharedFlow<String?> = _loginError
 
+    // Function to log in user using FirebaseAuth
     fun login(email: String, password: String) = viewModelScope.launch {
         try {
             FirebaseAuth.getInstance()
@@ -48,6 +55,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Function to register a new user using FirebaseAuth + Firestore
     fun register(
         email: String,
         password: String,
@@ -85,10 +93,12 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Reset registration result back to null
     fun resetRegisterResult() {
         _registerResult.value = null
     }
 
+    // Trigger password reset email via FirebaseAuth
     fun resetPassword(email: String) = viewModelScope.launch {
         try {
             FirebaseAuth.getInstance().sendPasswordResetEmail(email).await()
@@ -99,6 +109,7 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Load current user profile from Firestore
     fun loadCurrentUserFromFirebase() = viewModelScope.launch {
         try {
             val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
@@ -109,6 +120,8 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
             Log.e("Profile", "Failed to load user: ${e.message}")
         }
     }
+
+    // Update user profile fields in Firestore
     fun updateProfile(firstName: String, lastName: String, gender: String) = viewModelScope.launch {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
 
