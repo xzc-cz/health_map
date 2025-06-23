@@ -21,6 +21,23 @@ import com.example.healthmap.viewmodel.UserViewModel
 import androidx.compose.runtime.LaunchedEffect
 
 @Composable
+private fun DrawerMenuItem(
+    text: String,
+    onClick: () -> Unit,
+    bold: Boolean = true
+) {
+    Text(
+        text = text,
+        color = Color.White,
+        fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
+        fontSize = 16.sp,
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .padding(vertical = 6.dp)
+    )
+}
+
+@Composable
 fun AppDrawer(navController: NavController) {
     val userViewModel: UserViewModel = viewModel()
     val user = userViewModel.currentUser.collectAsState().value
@@ -35,52 +52,35 @@ fun AppDrawer(navController: NavController) {
             .background(Color.Black)
             .padding(36.dp)
     ) {
-        // ✅ 顶部用户信息
-        Column {
-            Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
-                text = "${user?.firstName ?: "User"} ${user?.lastName ?: ""}",
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                fontSize = 18.sp
-            )
-
-            Text(
-                text = user?.email ?: "example@email.com",
-                fontSize = 12.sp,
-                color = Color.White
-            )
-        }
-
-        Spacer(modifier = Modifier.height(72.dp)) // ✅ 拉开与功能列表的间距
-
-        // ✅ 功能菜单项
+        // 顶部用户信息
         Text(
-            text = "Profile",
+            text = "${user?.firstName ?: "User"} ${user?.lastName ?: ""}",
+            fontWeight = FontWeight.Bold,
             color = Color.White,
-            fontWeight = FontWeight.Bold, // ✅ 加粗
-            modifier = Modifier.clickable { navController.navigate("Profile") }
+            fontSize = 18.sp
+        )
+        Text(
+            text = user?.email ?: "example@email.com",
+            fontSize = 12.sp,
+            color = Color.White
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(72.dp))
 
-        Text(
-            text = "About App",
-            color = Color.White,
-            fontWeight = FontWeight.Bold, // ✅ 加粗
-            modifier = Modifier.clickable {
-                navController.navigate("about")
-            }
-        )
+        // 菜单项
+        DrawerMenuItem("Profile") { navController.navigate("Profile") }
+        DrawerMenuItem("About App") { navController.navigate("about") }
 
-        Spacer(modifier = Modifier.weight(1f)) // ✅ 推到底部
+        Spacer(modifier = Modifier.weight(1f))
 
-        // ✅ 登出项
+        // 登出项
         Text(
             text = "Log Out",
             color = Color.White,
             fontWeight = FontWeight.Normal,
+            fontSize = 16.sp,
             textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
             modifier = Modifier.clickable {
                 navController.navigate("login") {

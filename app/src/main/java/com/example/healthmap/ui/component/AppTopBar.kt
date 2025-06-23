@@ -32,10 +32,12 @@ fun AppTopBar(
         },
         navigationIcon = {
             if (showNavigationIcon) {
+                val icon = if (isHomeScreen) Icons.Default.Menu else Icons.Default.ArrowBack
+                val desc = if (isHomeScreen) "Menu" else "Back"
                 IconButton(onClick = onNavigationClick) {
                     Icon(
-                        imageVector = if (isHomeScreen) Icons.Default.Menu else Icons.Default.ArrowBack,
-                        contentDescription = if (isHomeScreen) "Menu" else "Back",
+                        imageVector = icon,
+                        contentDescription = desc,
                         tint = Color.White
                     )
                 }
