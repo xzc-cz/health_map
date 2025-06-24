@@ -44,6 +44,8 @@ import com.example.healthmap.ui.component.AppTopBar
 import com.example.healthmap.ui.component.Input
 import com.example.healthmap.ui.component.InputType
 import com.example.healthmap.ui.component.PlanMarkerText
+import com.example.healthmap.ui.component.PrimaryButton
+import com.example.healthmap.ui.theme.HealthMapTheme
 import com.example.healthmap.viewmodel.PlanViewModel
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -107,12 +109,12 @@ fun FormScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
-                    .padding(16.dp),
+                    .padding(HealthMapTheme.dimensions.spacingMedium),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.SpaceBetween,
+                    verticalArrangement = Arrangement.spacedBy(HealthMapTheme.dimensions.spacingMedium),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Input(
@@ -123,16 +125,12 @@ fun FormScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) { activityName = it.toString() }
 
-                    Spacer(modifier = Modifier.height(12.dp))
-
                     Input(
                         value = selectedTime,
                         label = "Select Time",
                         type = InputType.TIME,
                         modifier = Modifier.fillMaxWidth()
                     ) { selectedTime = it as LocalTime }
-
-                    Spacer(modifier = Modifier.height(12.dp))
 
                     Input(
                         value = selectedDate,

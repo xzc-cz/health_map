@@ -12,11 +12,14 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
 import com.example.healthmap.R
+import com.example.healthmap.ui.component.PrimaryButton
+import com.example.healthmap.ui.component.SecondaryButton
+import com.example.healthmap.ui.component.TextButton
+import com.example.healthmap.ui.theme.HealthMapTheme
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -135,7 +138,7 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(24.dp),
+                    .padding(HealthMapTheme.dimensions.spacingLarge),
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -144,28 +147,25 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     text = "WELCOME!",
                     style = MaterialTheme.typography.headlineLarge,
                     color = Color.White,
-                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 30.dp)
+                        .padding(bottom = HealthMapTheme.dimensions.spacingXL)
                 )
                 Text(
                     text = "TO",
                     style = MaterialTheme.typography.headlineLarge,
                     color = Color.White,
-                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 30.dp)
+                        .padding(bottom = HealthMapTheme.dimensions.spacingXL)
                 )
                 Text(
                     text = "HEALTH-MAP",
                     style = MaterialTheme.typography.headlineLarge,
                     color = Color.White,
-                    fontWeight = FontWeight.Bold,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 170.dp)
+                        .padding(bottom = HealthMapTheme.dimensions.spacingXXL * 2)
                 )
 
                 // Email input field
@@ -175,16 +175,19 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     label = { Text("Email", color = Color.White) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(HealthMapTheme.dimensions.radiusLarge),
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         cursorColor = Color.White,
                         focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.7f),
+                        focusedLabelColor = Color.White,
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f)
                     )
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(HealthMapTheme.dimensions.spacingMedium))
 
                 // Password input field
                 OutlinedTextField(
@@ -194,7 +197,8 @@ fun LoginScreen(navController: NavController, userViewModel: UserViewModel = vie
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(HealthMapTheme.dimensions.radiusLarge),
+                    colors = OutlinedTextFieldDefaults.colors(
                         focusedTextColor = Color.White,
                         unfocusedTextColor = Color.White,
                         cursorColor = Color.White,

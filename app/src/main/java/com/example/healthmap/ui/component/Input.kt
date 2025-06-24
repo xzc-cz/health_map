@@ -13,16 +13,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.healthmap.R
+import com.example.healthmap.ui.theme.HealthMapTheme
 import java.text.DecimalFormatSymbols
 import java.time.LocalDate
 import java.time.LocalTime
@@ -69,12 +72,22 @@ private fun TextInput(
     var trueValue by remember { mutableStateOf("") }
     var displayValue by remember { mutableStateOf("") }
 
-    Column {
+    Column(modifier = modifier) {
         if (label.isNotEmpty()) {
-            Text(text = label, modifier = Modifier.padding(start = 12.dp, bottom = 2.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(
+                    start = HealthMapTheme.dimensions.spacingMedium,
+                    bottom = HealthMapTheme.dimensions.spacingXS
+                )
+            )
         }
         OutlinedTextField(
-            modifier = modifier.padding(vertical = 2.dp).fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = HealthMapTheme.dimensions.spacingXS),
             enabled = !disabled,
             value = displayValue,
             onValueChange = {
@@ -92,7 +105,13 @@ private fun TextInput(
                 }
             },
             leadingIcon = {
-                if (leadingIcon != null) Icon(imageVector = leadingIcon, contentDescription = null)
+                if (leadingIcon != null) {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             },
             trailingIcon = {
                 if (value.isNotEmpty() && type == InputType.PASSWORD) {
@@ -103,7 +122,8 @@ private fun TextInput(
                                 displayValue = "*".repeat(value.length)
                             },
                             imageVector = ImageVector.vectorResource(id = R.drawable.ic_outline_visibility_off),
-                            contentDescription = null
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         InputType.PASSWORD -> Icon(
                             modifier = Modifier.clickable {
@@ -111,14 +131,30 @@ private fun TextInput(
                                 displayValue = value
                             },
                             imageVector = ImageVector.vectorResource(id = R.drawable.ic_outline_visibility),
-                            contentDescription = null
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         else -> {}
                     }
                 }
             },
-            placeholder = { Text(text = placeholder) },
-            shape = RoundedCornerShape(8.dp)
+            placeholder = { 
+                Text(
+                    text = placeholder,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            shape = RoundedCornerShape(HealthMapTheme.dimensions.radiusLarge),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                cursorColor = MaterialTheme.colorScheme.primary
+            )
         )
     }
 }
@@ -135,28 +171,60 @@ private fun NumberInput(
     val formatter = DecimalFormatter(DecimalFormatSymbols(Locale.US))
     var displayValue by remember { mutableStateOf("") }
 
-    Column {
+    Column(modifier = modifier) {
         if (label.isNotEmpty()) {
-            Text(text = label, modifier = Modifier.padding(start = 12.dp, bottom = 2.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(
+                    start = HealthMapTheme.dimensions.spacingMedium,
+                    bottom = HealthMapTheme.dimensions.spacingXS
+                )
+            )
         }
         OutlinedTextField(
-            modifier = modifier.padding(vertical = 2.dp).fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = HealthMapTheme.dimensions.spacingXS),
             enabled = !disabled,
             value = displayValue,
             onValueChange = {
-                displayValue = it // 保留用户输入的完整内容
-                val cleaned = formatter.cleanup(it) // 清洗只用于转换
+                displayValue = it
+                val cleaned = formatter.cleanup(it)
                 val parsed = cleaned.toDoubleOrNull()
                 if (parsed != null) {
                     onValueChanged(parsed)
                 }
             },
             leadingIcon = {
-                if (leadingIcon != null) Icon(imageVector = leadingIcon, contentDescription = null)
+                if (leadingIcon != null) {
+                    Icon(
+                        imageVector = leadingIcon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            placeholder = { Text(text = number.toString()) },
-            visualTransformation = DecimalInputVisualTransformation(formatter)
+            placeholder = { 
+                Text(
+                    text = number.toString(),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            visualTransformation = DecimalInputVisualTransformation(formatter),
+            shape = RoundedCornerShape(HealthMapTheme.dimensions.radiusLarge),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                cursorColor = MaterialTheme.colorScheme.primary
+            )
         )
     }
 }
@@ -176,17 +244,42 @@ private fun DateInput(
     var displayValue by remember { mutableStateOf("") }
 
     Box(modifier = modifier, contentAlignment = Alignment.BottomStart) {
-        TextInput(displayValue, label, InputType.DATE, disabled, false, toDate(selectedDate), Icons.Outlined.DateRange, modifier.align(Alignment.Center)) {
+        TextInput(
+            displayValue,
+            label,
+            InputType.DATE,
+            disabled,
+            false,
+            toDate(selectedDate),
+            Icons.Outlined.DateRange,
+            modifier.align(Alignment.Center)
+        ) {
             displayValue = it
         }
         if (!disabled) {
-            TextInput(" ", "", InputType.TEXT, true, false, "", null, modifier.align(Alignment.Center).clickable(
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() }
-            ) {
-                DatePickerDialog(context, { _, y, m, d -> onDateSelected(LocalDate.of(y, m + 1, d)) },
-                    calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
-            }) {}
+            TextInput(
+                " ",
+                "",
+                InputType.TEXT,
+                true,
+                false,
+                "",
+                null,
+                modifier
+                    .align(Alignment.Center)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) {
+                        DatePickerDialog(
+                            context,
+                            { _, y, m, d -> onDateSelected(LocalDate.of(y, m + 1, d)) },
+                            calendar.get(Calendar.YEAR),
+                            calendar.get(Calendar.MONTH),
+                            calendar.get(Calendar.DAY_OF_MONTH)
+                        ).show()
+                    }
+            ) {}
         }
     }
 }

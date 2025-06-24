@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -19,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
 import com.example.healthmap.viewmodel.UserViewModel
 import androidx.compose.runtime.LaunchedEffect
+import com.example.healthmap.ui.theme.HealthMapTheme
 
 @Composable
 private fun DrawerMenuItem(
@@ -28,12 +30,12 @@ private fun DrawerMenuItem(
 ) {
     Text(
         text = text,
-        color = Color.White,
-        fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal,
-        fontSize = 16.sp,
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurface,
+        fontWeight = if (bold) FontWeight.SemiBold else FontWeight.Normal,
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(vertical = 6.dp)
+            .padding(vertical = HealthMapTheme.dimensions.spacingSmall)
     )
 }
 
@@ -49,25 +51,24 @@ fun AppDrawer(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .background(Color.Black)
-            .padding(36.dp)
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(HealthMapTheme.dimensions.spacingXL)
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(HealthMapTheme.dimensions.spacingXL))
 
         // 顶部用户信息
         Text(
             text = "${user?.firstName ?: "User"} ${user?.lastName ?: ""}",
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            fontSize = 18.sp
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = user?.email ?: "example@email.com",
-            fontSize = 12.sp,
-            color = Color.White
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
-        Spacer(modifier = Modifier.height(72.dp))
+        Spacer(modifier = Modifier.height(HealthMapTheme.dimensions.spacingXXL + HealthMapTheme.dimensions.spacingLarge))
 
         // 菜单项
         DrawerMenuItem("Profile") { navController.navigate("Profile") }
@@ -78,9 +79,8 @@ fun AppDrawer(navController: NavController) {
         // 登出项
         Text(
             text = "Log Out",
-            color = Color.White,
-            fontWeight = FontWeight.Normal,
-            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.error,
             textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
             modifier = Modifier.clickable {
                 navController.navigate("login") {
